@@ -62,11 +62,11 @@ if [ ! -e /usr/local/snapweb/jack.sh ]; then
 fi 
 
 #Damos de alta el fichero en el directorio /etc/incron.d
-if [ ! -e /etc/snapweb.cfg ];
+if [ ! -e /etc/snapweb.conf ];
   then
     echo "Descargando fichero de configuracion...."
-    wget -nv -T 15 http://desa.webnet.es/snapweb/snapweb.cfg -O /etc/snapweb.cfg >/dev/null 2>/dev/null
-    if [ ! -e /etc/snapweb.cfg ]; then
+    wget -nv -T 15 http://desa.webnet.es/snapweb/snapweb.conf -O /etc/snapweb.conf >/dev/null 2>/dev/null
+    if [ ! -e /etc/snapweb.conf ]; then
       echo "Error: No ha sido posible obtener el fichero de configuracion snapweb.cfg. Inténtelo más tarde. Gracias."
       exit
     fi 
