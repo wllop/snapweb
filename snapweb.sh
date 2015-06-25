@@ -65,8 +65,8 @@ fi
 if [ ! -e /etc/snapweb.cfg ];
   then
     echo "Descargando fichero de configuracion...."
-    wget -nv -T 15 http://desa.webnet.es/snapweb/snapweb.cfg -O /usr/local/snapweb/snapweb.cfg >/dev/null 2>/dev/null
-    if [ ! -e /usr/local/snapweb/snapweb.cfg ]; then
+    wget -nv -T 15 http://desa.webnet.es/snapweb/snapweb.cfg -O /etc/snapweb.cfg >/dev/null 2>/dev/null
+    if [ ! -e /etc/snapweb.cfg ]; then
       echo "Error: No ha sido posible obtener el fichero de configuracion snapweb.cfg. Inténtelo más tarde. Gracias."
       exit
     fi 
