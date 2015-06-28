@@ -82,11 +82,10 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
       service incron restart
     else
       #Mirar si lo que se quiere crear es una restauración en modo lock_on
-      #if [  -e  $base/$subdir/$2 ] ; then 
-       if [  -e  /usr/local/snapweb/snap_back/$1/$2 ] ; then 
+      if [  -e  $base/$subdir/$2 ] ; then 
        #Es una restauración!!
-       cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
-       #cp -rfp /usr/local/snapweb/snap_back/$1/$2 $1 2>>/usr/local/snapweb/msg.log
+       #cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
+       cp -rfp /usr/local/snapweb/snap_back/$1/$2 $1 2>>/usr/local/snapweb/msg.log
        service incron restart #Reiniciar servicio para actualizar inodos
       else
       #Probar el borrado del directorio con rmdir si no está vacío hay que ver qué hacemos. 
@@ -114,16 +113,13 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
       filas1=$(echo $[$? + 1])
       subdir=$(echo $1|cut -d/ -f$filas1- )
       rm -fr $base/$subdir/$2
-<<<<<<< HEAD
       rm -fr /etc/incron.d/$(echo $1/$2|tr -d /)
       #grep -v "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%" /etc/incron.d/$(echo $1/$2|tr -d /)>/tmp/$base$subdir$2
       service incron restart
       echo "Se ha eliminado el directorio: $1/$2">>/usr/local/snapweb/msg.log    else
-=======
       #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       echo "Se ha eliminado el directorio: $1/$2">>/usr/local/snapweb/msg.log
     else
->>>>>>> parent of 767184b... Gestión exclusiones
       #Recupero el directorio del repositorio que tengo en snap_back!!
       #echo "Recibido: $1 - $2 - $3 - $4">>/usr/local/snapweb/msg.log
       if [ ! -e $1/$2 ]; then 
