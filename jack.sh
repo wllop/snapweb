@@ -48,17 +48,16 @@ base_incron(){ #Devuelvo el directorio base de incron!
       fi
   done
 }
+#/bin/bash
 buscar_excluidos(){ #Comprueba si $1 está en la lista de directorios a excluir de la monitorización
 IFS_OLD=$IFS
-IFS=;
-for var in $(grep -i "exclude_dir" /etc/snapweb.conf|cut -d=-f2)
+IFS=';'
+for var in $(grep -i "exclude_dir" /etc/snapweb.conf|cut -d= -f2)
 do
   if [ "$var" = "$1"];then
-       echo 0
-       exit
+      exit
   fi
 done 
-echo 1
 IFS=$IFS_OLD
 }
 lock_on=$(grep -i "lock_on=" /etc/snapweb.conf|cut -d= -f2)
@@ -72,11 +71,8 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     if [ "$lock_on" = "0" ];then
       #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       #echo "Se ha creado el directorio: $1/$2">>/usr/local/snapweb/msg.log
-      #Compruebo que el directorio no esté en la lista de exluidos
-      if buscar_excluidos $2; then
-         echo "Directorio Excluido: $2" >>/usr/local/snapweb/exclude.log
-         exit
-      fi  
+      #Compruebo que el directorio no esté en la lista de exluidos. Si es así finalizará el script!!
+      buscar_excluidos $1 
       #Actualizo snap_back
       echo "Nuevo Directorio: cp -pfr $1/$2 $base/$subdir/$2">>/usr/local/snapweb/msg.log
       cp -fpr $1/$2 $base/$subdir/$2
