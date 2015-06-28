@@ -59,6 +59,7 @@ do
   fi
 done 
 echo 1
+IFS=$IFS_OLD
 }
 lock_on=$(grep -i "lock_on=" /etc/snapweb.conf|cut -d= -f2)
 if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
