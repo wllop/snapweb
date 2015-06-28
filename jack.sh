@@ -19,15 +19,12 @@
 #$1 --> Ruta
 #$2 --> Fichero
 #$3 --> Evento
-#Variable lock_on=1 obtenida del fichero /etc/snapweb.conf
-#lock_on:0|1
-#echo "Evento: $1 $2 $3">>/usr/local/snapweb/event.log
+
 row_count(){ #Para poder ir eliminado "directorios" hasta encontrar la base
   IFS_OLD=$IFS
   IFS=$/
   i=$(echo $1|wc -w)
   IFS=$IFS_OLD
-  #echo "Campos:$[$i + 1]">>/usr/local/snapweb/msg.log
   return $i
 }
 
@@ -36,13 +33,9 @@ base_snap(){ #Saber el directorio base_snap que está en snap_back
   if [ -d /usr/local/snapweb/snap_back/$temp ];then
     echo "/usr/local/snapweb/snap_back/$temp"
   else
-  #echo $1
   row_count $1
   filas=$?
-  #echo "filas:$filas"
-  #sleep 2
   base_snap $(echo $1|cut -d/ -f1-$filas )
-  #sleep 2
   fi
 }
 base_incron(){ #Devuelvo el directorio base de incron!
@@ -55,17 +48,18 @@ base_incron(){ #Devuelvo el directorio base de incron!
       fi
   done
 }
-
-#Exclusión mutua para obtener el estado del bloqueo!
-#lockfile=/tmp/mutex.lock#
-#if mkdir "$lockfile"; then
-# if [ -f "$lockfile/tsync" ];then #Cuánto hace de la última actualización
-#   
-# fi
-# rm -fr $lockfile
-#fi
-#Lock_on
-
+buscar_excluidos(){ #Comprueba si $1 está en la lista de directorios a excluir de la monitorización
+IFS_OLD=$IFS
+IFS=;
+for var in $(grep -i "exclude_dir" /etc/snapweb.conf|cut -d=-f2)
+do
+  if [ "$var" = "$1"];then
+       echo 0
+       exit
+  fi
+done 
+echo 1
+}
 lock_on=$(grep -i "lock_on=" /etc/snapweb.conf|cut -d= -f2)
 if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
@@ -77,6 +71,11 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     if [ "$lock_on" = "0" ];then
       #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       #echo "Se ha creado el directorio: $1/$2">>/usr/local/snapweb/msg.log
+      #Compruebo que el directorio no esté en la lista de exluidos
+      if buscar_excluidos $2; then
+         echo "Directorio Excluido: $2" >>/usr/local/snapweb/exclude.log
+         exit
+      fi  
       #Actualizo snap_back
       echo "Nuevo Directorio: cp -pfr $1/$2 $base/$subdir/$2">>/usr/local/snapweb/msg.log
       cp -fpr $1/$2 $base/$subdir/$2
