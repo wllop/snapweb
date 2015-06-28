@@ -30,7 +30,7 @@ if [ $? -ne 0 ];  then
 fi
 
 #Comprobamos parámetros.
-if [ ! -d $1 ] || [ "$1" == "" ] || [ "$1" == "-h"];
+if [ ! -d $1 ] || [ "$1" == "" ] || [ "$1" == "-h" ];
 then
   echo "La sintaxis es:"
   echo "snapweb.sh /ruta/web"
