@@ -72,7 +72,7 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
       #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       #echo "Se ha creado el directorio: $1/$2">>/usr/local/snapweb/msg.log
       #Compruebo que el directorio no esté en la lista de exluidos. Si es así finalizará el script!!
-      buscar_excluidos $1 
+      buscar_excluidos $2
       #Actualizo snap_back
       echo "Nuevo Directorio: cp -pfr $1/$2 $base/$subdir/$2">>/usr/local/snapweb/msg.log
       cp -fpr $1/$2 $base/$subdir/$2
