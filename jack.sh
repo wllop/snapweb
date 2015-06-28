@@ -128,7 +128,8 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
       filas1=$(echo $[$? + 1])
       #echo "Filas1: $filas1 y Filas2: $filas2">>/usr/local/snapweb/msg.log
       #Añado a la base los subdirectorios existentes
-      subdir=$(echo $1|cut -d/ -f$filas1- )
+      #subdir=$(echo $1|cut -d/ -f$filas1- )
+      subdir=$1
       echo "Ruta final:$base (bas)/$subdir (subidr)/$2 (2) - $1 (1)">>/usr/local/snapweb/msg.log
         if [ -e $base/$subdir/$2 ];then
         cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
@@ -160,7 +161,8 @@ elif [ "$3" = "IN_MOVED_FROM,IN_ISDIR" ]; then #Carpeta borrada
       base=$(base_snap $1)
       row_count $base
       filas1=$(echo $[$? + 1])
-      subdir=$(echo $1|cut -d/ -f$filas1- )
+      #subdir=$(echo $1|cut -d/ -f$filas1- )
+      subdir=$1
       rm -fr $base/$subdir/$2 2>/dev/null
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
@@ -171,7 +173,8 @@ elif [ "$3" = "IN_MOVED_FROM,IN_ISDIR" ]; then #Carpeta borrada
       filas1=$(echo $[$? + 1])
       #echo "Filas1: $filas1 y Filas2: $filas2">>/usr/local/snapweb/msg.log
       #Añado a la base los subdirectorios existentes
-      subdir=$(echo $1|cut -d/ -f$filas1- )
+      #subdir=$(echo $1|cut -d/ -f$filas1- )
+      subdir=$1
       echo "Ruta final:$base/$subdir/$2">>/usr/local/snapweb/msg.log
       if [ -e $base/$subdir/$2 ];then
         cp -rfp $base/$subdir/$2 $1/$2 2>>/usr/local/snapweb/msg.log
@@ -188,6 +191,7 @@ elif [ "$3" = "IN_CREATE" ]; then #Nueva carpeta creada!
       row_count $base
       filas1=$(echo $[$? + 1])
       subdir=$(echo $1|cut -d/ -f$filas1- )
+      subdir=$1
     if [ "$lock_on" = "0" ];then
       #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       #echo "Se ha creado el directorio: $1/$2">>/usr/local/snapweb/msg.log
