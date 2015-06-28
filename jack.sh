@@ -74,7 +74,8 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
       #Compruebo que el directorio no esté en la lista de exluidos. Si es así finalizará el script!!
       buscar_excluidos $2
       #Actualizo snap_back
-      echo "Nuevo Directorio: cp -pfr $1/$2 $base/$subdir/$2">>/usr/local/snapweb/msg.log
+      #echo "Nuevo Directorio: cp -pfr $1/$2 $base/$subdir/$2">>/usr/local/snapweb/msg.log
+      echo "Nuevo Directorio2 : cp -pfr $1/$2 $base/$1/$2">>/usr/local/snapweb/msg.log
       #cp -fpr $1/$2 $base/$subdir/$2
       cp -fpr $1/$2 /usr/local/snapweb/snap_back/$1/$2 2>>/usr/local/snapweb/msg.log
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
@@ -84,8 +85,8 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
       #if [  -e  $base/$subdir/$2 ] ; then 
        if [  -e  /usr/local/snapweb/snap_back/$1/$2 ] ; then 
        #Es una restauración!!
-       #cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
-       cp -rfp /usr/local/snapweb/snap_back/$1/$2 $1 2>>/usr/local/snapweb/msg.log
+       cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
+       #cp -rfp /usr/local/snapweb/snap_back/$1/$2 $1 2>>/usr/local/snapweb/msg.log
        service incron restart #Reiniciar servicio para actualizar inodos
       else
       #Probar el borrado del directorio con rmdir si no está vacío hay que ver qué hacemos. 
