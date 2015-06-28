@@ -75,9 +75,9 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
       buscar_excluidos $2
       #Actualizo snap_back
       #echo "Nuevo Directorio: cp -pfr $1/$2 $base/$subdir/$2">>/usr/local/snapweb/msg.log
-      echo "Nuevo Directorio2 : cp -pfr $1/$2 $base/$1/$2">>/usr/local/snapweb/msg.log
+      echo "Nuevo Directorio2 : cp -pfr $1/$2 $base/$2">>/usr/local/snapweb/msg.log
       #cp -fpr $1/$2 $base/$subdir/$2
-      cp -fpr $1/$2 /usr/local/snapweb/snap_back/$1/$2 2>>/usr/local/snapweb/msg.log
+      cp -fpr $1/$2 /usr/local/snapweb/snap_back/$2 2>>/usr/local/snapweb/msg.log
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       service incron restart
     else
