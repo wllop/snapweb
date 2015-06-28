@@ -119,8 +119,6 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
       filas1=$(echo $[$? + 1])
       subdir=$(echo $1|cut -d/ -f$filas1- )
       rm -fr $base/$subdir/$2
-      rm -fr /etc/incron.d/$(echo $1/$2|tr -d /)
-      service incron restart
       #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       echo "Se ha eliminado el directorio: $1/$2">>/usr/local/snapweb/msg.log
     else
