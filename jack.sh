@@ -129,7 +129,7 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
       #echo "Filas1: $filas1 y Filas2: $filas2">>/usr/local/snapweb/msg.log
       #Añado a la base los subdirectorios existentes
       subdir=$(echo $1|cut -d/ -f$filas1- )
-      echo "Ruta final:$base/$subdir/$2">>/usr/local/snapweb/msg.log
+      echo "Ruta final:$base (bas)/$subdir (subidr)/$2 (2) - $1 (1)">>/usr/local/snapweb/msg.log
         if [ -e $base/$subdir/$2 ];then
         cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
         echo "Se ha intentado eliminar el directorio: $1/$2, aunque se ha restaurado correctamente!">>/usr/local/snapweb/msg.log
