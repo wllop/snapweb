@@ -196,8 +196,8 @@ elif [ "$3" = "IN_CREATE" ]; then #Nueva carpeta creada!
       #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       #echo "Se ha creado el directorio: $1/$2">>/usr/local/snapweb/msg.log
       #Actualizo snap_back
-      echo "Nuevo Fichero: cp -pfr $1(1)/$2(2) $base(base)/$subdir(subidr)/$2(2)">>/usr/local/snapweb/msg.log
-      cp -fpr $1/$2 $base/$subdir/$2
+      echo "Nuevo Fichero: cp -pfr $1(1)/$2(2) /usr/local/snapweb/snap_back$1/$2(2)">>/usr/local/snapweb/msg.log
+      cp -fpr $1/$2 /usr/local/snapweb$1/$2
     else
       #Mirar si lo que se quiere crear es una restauración en modo lock_on
       if [  -e  $base/$subdir/$2 ] ; then 
