@@ -48,13 +48,13 @@ base_incron(){ #Devuelvo el directorio base de incron!
       fi
   done
 }
-
+#/bin/bash
 buscar_excluidos(){ #Comprueba si $1 está en la lista de directorios a excluir de la monitorización
 IFS_OLD=$IFS
 IFS=';'
 for var in $(grep -i "exclude_dir" /etc/snapweb.conf|cut -d= -f2)
 do
-  if [ "$var" = "$1" ];then
+  if [ "$var" = "$1"];then
       exit
   fi
 done 
@@ -114,10 +114,16 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
       filas1=$(echo $[$? + 1])
       subdir=$(echo $1|cut -d/ -f$filas1- )
       rm -fr $base/$subdir/$2
+<<<<<<< HEAD
       rm -fr /etc/incron.d/$(echo $1/$2|tr -d /)
       #grep -v "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%" /etc/incron.d/$(echo $1/$2|tr -d /)>/tmp/$base$subdir$2
       service incron restart
       echo "Se ha eliminado el directorio: $1/$2">>/usr/local/snapweb/msg.log    else
+=======
+      #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
+      echo "Se ha eliminado el directorio: $1/$2">>/usr/local/snapweb/msg.log
+    else
+>>>>>>> parent of 767184b... Gestión exclusiones
       #Recupero el directorio del repositorio que tengo en snap_back!!
       #echo "Recibido: $1 - $2 - $3 - $4">>/usr/local/snapweb/msg.log
       if [ ! -e $1/$2 ]; then 
@@ -255,7 +261,7 @@ elif [ "$3" = "IN_CLOSE_WRITE" ]; then # fichero CAMBIADO!
       filas1=$(echo $[$? + 1])
       subdir=$(echo $1|cut -d/ -f$filas1- )
     if [ "$lock_on" = "0" ];then
-      #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
+      echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       echo "Se ha eliminado el fichero que se ha movido/creado: $1/$2">>/usr/local/snapweb/msg.log
       cp -fpr $1/$2 $base/$subdir/$2
   
