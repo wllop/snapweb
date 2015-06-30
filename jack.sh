@@ -20,35 +20,6 @@
 #$2 --> Fichero
 #$3 --> Evento
 
-row_count(){ #Para poder ir eliminado "directorios" hasta encontrar la base
-  IFS_OLD=$IFS
-  IFS=$/
-  i=$(echo $1|wc -w)
-  IFS=$IFS_OLD
-  return $i
-}
-
-base_snap(){ #Saber el directorio base_snap que está en snap_back
-  temp=$(echo $1|tr -d /)
-  if [ -d /usr/local/snapweb/snap_back/$temp ];then
-    echo "/usr/local/snapweb/snap_back/$temp"
-  else
-  row_count $1
-  filas=$?
-  base_snap $(echo $1|cut -d/ -f1-$filas )
-  fi
-}
-base_incron(){ #Devuelvo el directorio base de incron!
-  temp=$(echo $1|tr -d /)
-  for fich in $(ls /etc/incron.d)
-  do
-    if echo $temp|grep $fich >/dev/null;
-      then
-        echo "/etc/init.d/$fich" 
-      fi
-  done
-}
-
 buscar_excluidos(){ #Comprueba si $1 está en la lista de directorios a excluir de la monitorización
 IFS_OLD=$IFS
 IFS=';'
@@ -61,37 +32,23 @@ done
 IFS=$IFS_OLD
 }
 
-#Exclusión mutua para obtener el estado del bloqueo!
-#lockfile=/tmp/mutex.lock#
-#if mkdir "$lockfile"; then
-# if [ -f "$lockfile/tsync" ];then #Cuánto hace de la última actualización
-#   
-# fi
-# rm -fr $lockfile
-#fi
-#Lock_on
-
-lock_on=$(grep -i "lock_on=" /etc/snapweb.conf|cut -d= -f2)
+lock_on=$(grep -i "lock_on" /etc/snapweb.conf|cut -d= -f2)
 if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
-      basei=base_incron $1
-      base=$(base_snap $1)
-      row_count $base
-      filas1=$(echo $[$? + 1])
-      subdir=$(echo $1|cut -d/ -f$filas1- )
+      echo "Parametros: $1 (1) y $2 (2)">>/usr/local/snapweb/msg.log
     if [ "$lock_on" = "0" ];then
-      #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
-      #echo "Se ha creado el directorio: $1/$2">>/usr/local/snapweb/msg.log
+
       #Actualizo snap_back
-      echo "Nuevo Directorio: cp -pfr $1/$2 $base/$subdir/$2">>/usr/local/snapweb/msg.log
-      cp -fpr $1/$2 $base/$subdir/$2
+      echo "Nuevo Directorio: cp -pfr $1/$2 /usr/local/snapweb/snap_back$1/$2">>/usr/local/snapweb/msg.log
+      cp -pfr $1/$2 /usr/local/snapweb/snap_back$1/$2
+      buscar_excluidos $1/$2
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       service incron restart
     else
       #Mirar si lo que se quiere crear es una restauración en modo lock_on
-      if [  -e  $base/$subdir/$2 ] ; then 
+      if [  -e  /usr/local/snapweb/snap_back$1/$2 ] ; then 
        #Es una restauración!!
-       cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
+       cp -rfp /usr/local/snapweb/snap_back$1/$2 $1 2>>/usr/local/snapweb/msg.log
        service incron restart #Reiniciar servicio para actualizar inodos
       else
       #Probar el borrado del directorio con rmdir si no está vacío hay que ver qué hacemos. 
@@ -110,98 +67,57 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     fi
 elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
    if [ "$lock_on" = "0" ];then
-      #Elimino de la monitorización --> Pendiente
-      #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
-      #service incron restart
-      #Actualizo snap_back
-      base=$(base_snap $1)
-      row_count $base
-      filas1=$(echo $[$? + 1])
-      subdir=$(echo $1|cut -d/ -f$filas1- )
-      rm -fr $base/$subdir/$2
-      #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
-      echo "Se ha eliminado el directorio: $1/$2">>/usr/local/snapweb/msg.log
+      rm -fr /usr/local/snapweb/snap_back$1/$2
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
-      #echo "Recibido: $1 - $2 - $3 - $4">>/usr/local/snapweb/msg.log
-      if [ ! -e $1/$2 ]; then 
-      base=$(base_snap $1)
-      row_count $base
-      filas1=$(echo $[$? + 1])
-      #echo "Filas1: $filas1 y Filas2: $filas2">>/usr/local/snapweb/msg.log
       #Añado a la base los subdirectorios existentes
-      subdir=$(echo $1|cut -d/ -f$filas1- )
-      echo "Ruta final:$base/$subdir/$2">>/usr/local/snapweb/msg.log
-        if [ -e $base/$subdir/$2 ];then
-        cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
-        echo "Se ha intentado eliminar el directorio: $1/$2, aunque se ha restaurado correctamente!">>/usr/local/snapweb/msg.log
+      if [ ! -e $1/$2 ]; then 
+      #Añado a la base los subdirectorios existentes
+       if [ -e /usr/local/snapweb/snap_back$1/$2 ];then
+        cp -rfp /usr/local/snapweb/snap_back$1/$2 $1 2>>/usr/local/snapweb/msg.log
         service incron restart
-        else
-        echo "Se ha eliminado el directorio: $1/$2 y no ha podido ser restaurado ya que no hay copia en backup">>/usr/local/snapweb/msg.log
+        sleep 6
+          if [ ! -e $1/$2 ]; then #Eliminación persistente!!!
+          cp -rfp /usr/local/snapweb/snap_back$1/$2 $1 2>>/usr/local/snapweb/msg.log
+          service incron restart
+          fi
         fi
       fi
     fi
 elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
     if [ "$lock_on" = "0" ];then
-      base=$(base_snap $1)
-      row_count $base
-      filas1=$(echo $[$? + 1])
-      subdir=$(echo $1|cut -d/ -f$filas1- )
-      cp -fpr $1/$2 $base/$subdir/$2
-      echo "Se ha renombrado el directorio $1/$2 $base/$subdir/$2">>/usr/local/snapweb/msg.log
+      cp -fpr $1/$2 /usr/local/snapweb/snap_back$1/$2
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
       service incron restart
     else
       rm -fr $1/$2
-      echo "Se ha eliminado un directorio que había sido creado tras mover carpeta">>/usr/local/snapweb/msg.log
     fi
 elif [ "$3" = "IN_MOVED_FROM,IN_ISDIR" ]; then #Carpeta borrada
     if [ "$lock_on" = "0" ];then
-      #Elimino de la monitorización --> Pendiente
-      base=$(base_snap $1)
-      row_count $base
-      filas1=$(echo $[$? + 1])
-      subdir=$(echo $1|cut -d/ -f$filas1- )
-      rm -fr $base/$subdir/$2 2>/dev/null
+      rm -fr /usr/local/snapweb/snap_back$1/$2 2>/dev/null
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
-      #echo "Recibido: $1 - $2 - $3 - $4">>/usr/local/snapweb/msg.log
       if [ ! -e $1/$2 ]; then 
-      base=$(base_snap $1)
-      row_count $base
-      filas1=$(echo $[$? + 1])
-      #echo "Filas1: $filas1 y Filas2: $filas2">>/usr/local/snapweb/msg.log
-      #Añado a la base los subdirectorios existentes
-      subdir=$(echo $1|cut -d/ -f$filas1- )
-      echo "Ruta final:$base/$subdir/$2">>/usr/local/snapweb/msg.log
-      if [ -e $base/$subdir/$2 ];then
-        cp -rfp $base/$subdir/$2 $1/$2 2>>/usr/local/snapweb/msg.log
-        echo "Se ha intentado mover el directorio: $1/$2, aunque se ha restaurado correctamente!">>/usr/local/snapweb/msg.log
+      if [ -e /usr/local/snapweb/snap_back$1/$2 ];then
+        cp -rfp /usr/local/snapweb/snap_back$1/$2 $1/$2 2>>/usr/local/snapweb/msg.log
         service incron restart
-      else
-        echo "Se ha movido el directorio: $1/$2 y no ha podido ser restaurado ya que no hay copia en backup">>/usr/local/snapweb/msg.log
-      fi
       fi
     fi
 elif [ "$3" = "IN_CREATE" ]; then #Nueva carpeta creada!
-    #Activo el registro de la carpeta!
-      base=$(base_snap $1)
-      row_count $base
-      filas1=$(echo $[$? + 1])
-      subdir=$(echo $1|cut -d/ -f$filas1- )
     if [ "$lock_on" = "0" ];then
-      #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
-      #echo "Se ha creado el directorio: $1/$2">>/usr/local/snapweb/msg.log
       #Actualizo snap_back
       echo "Nuevo Fichero: cp -pfr $1/$2 $base/$subdir/$2">>/usr/local/snapweb/msg.log
-      cp -fpr $1/$2 $base/$subdir/$2
+      cp -fpr $1/$2 /usr/local/snapweb/snap_back$1/$2
     else
+      echo "Nuevo fichero con lock=1">>/usr/local/snapweb/msg.log     
       #Mirar si lo que se quiere crear es una restauración en modo lock_on
-      if [  -e  $base/$subdir/$2 ] ; then 
+      if [  -e  /usr/local/snapweb/snap_back$1/$2 ] ; then 
        #Es una restauración!!
-       cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
-      else
+       echo 
+       exit
+	    else
+        echo "No es restuaración!! -e  /usr/local/snapweb/snap_back$1/$2">>/usr/local/snapweb/msg.log
       #Probar el borrado del directorio con rmdir si no está vacío hay que ver qué hacemos. 
       #Crear una carpeta .changes con lo q haya cambiado.
       if [ ! -e /usr/local/snapweb/.changes ];then
@@ -217,79 +133,31 @@ elif [ "$3" = "IN_CREATE" ]; then #Nueva carpeta creada!
      fi 
     fi
 elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero eliminado!
-    base=$(base_snap $1)
-    row_count $base
-    filas1=$(echo $[$? + 1])
-    subdir=$(echo $1|cut -d/ -f$filas1- ) 
     #Activo el registro de la carpeta!
     if [ "$lock_on" = "0" ];then
-      #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
-      cp -fpr $1/$2 $base/$subdir/$2
-      echo "Se ha creado / eliminado el fichero que se ha movido/creado: $1/$2">>/usr/local/snapweb/msg.log
+      cp -fpr $1/$2 /usr/local/snapweb/snap_back$1/$2
     else
-      #Mirar si lo que se quiere crear es una restauración en modo lock_on
-            echo "Se ha Evento:$3 creado / eliminado el fichero que se ha movido/creado: $1/  -- $2">>/usr/local/snapweb/msg.log
-            echo "Base: $base Subdir: $subdir: $1/$2">>/usr/local/snapweb/msg.log 
-      #if [  -e  $base/$subdir/$2 ]; then 
-       #Es una restauración!!
-     #   cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
-     # elif  diff $base/$subdir/$2 $1/$2; thennano
-     #   echo "Ya se ha restaurado!!" >>/usr/local/snap_back/msg.local
-     # else
-      #Probar el borrado del directorio con rmdir si no está vacío hay que ver qué hacemos. 
-      #Crear una carpeta .changes con lo q haya cambiado.
-      #if [ ! -e /usr/local/snapweb/.changes ];then
-       #  mkdir -p /usr/local/snapweb/.changes
-       #  chmod 750 /usr/local/snapweb/.changes
-      #fi
-       #nombre del fichero será la ruta absoluta, sustituyendo la / por :::
-       #filesan=$(echo $1/$2|sed 's/\//:_:/g')
-      #if [ -e /usr/local/snapweb/.changes/$filesan ];then
-        #rm -fr /usr/local/snapweb/.changes/$filesan 
-      #fi
-      #mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
+       #Mirar si lo que se quiere crear es una restauración en modo lock_on
         rm -fr $1/$2 2>/dev/null #Redirecciono error por problemas con pureftpd
-        echo "Se ha eliminado un fichero que había sido creado tras eliminar fichero: $base/$subdir/$2   -- $1/$2">>/usr/local/snapweb/msg.log
-     #fi 
     fi
 elif [ "$3" = "IN_CLOSE_WRITE" ]; then # fichero CAMBIADO!
     #Activo el registro de la carpeta!
-    base=$(base_snap $1)
-      row_count $base
-      filas1=$(echo $[$? + 1])
-      subdir=$(echo $1|cut -d/ -f$filas1- )
+     echo "Evento INCLOSE_WRITE lock_on=$lock_on">>/usr/local/snapweb/msg.log
     if [ "$lock_on" = "0" ];then
+      if [ -d $1/$2 ];then
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
-      echo "Se ha eliminado el fichero que se ha movido/creado: $1/$2">>/usr/local/snapweb/msg.log
-      cp -fpr $1/$2 $base/$subdir/$2
-  
+      fi
+      cp -fpr $1/$2 /usr/local/snapweb/snap_back$1/$2
     else
       #Mirar si HAY cambios 
       base=$(base_snap $1)
       row_count $base
       filas1=$(echo $[$? + 1])
       subdir=$(echo $1|cut -d/ -f$filas1- )
-      if  ! diff  $base/$subdir/$2 $1/$2 ;then 
+      if  ! diff  /usr/local/snapweb/snap_back$1/$2 $1/$2 ;then 
        #Es una restauración!!
-        cp -rfp $base/$subdir/$2 $1/$2 2>>/usr/local/snapweb/msg.log
-      else
-      echo "diff Evento:$3 $base/$subdir/$2 $1/$2">>/usr/local/snapweb/msg.log
-    
-      exit;
-      #Probar el borrado del directorio con rmdir si no está vacío hay que ver qué hacemos. 
-      #Crear una carpeta .changes con lo q haya cambiado.
-      #if [ ! -e /usr/local/snapweb/.changes ];then
-       #  mkdir -p /usr/local/snapweb/.changes
-       #  chmod 750 /usr/local/snapweb/.changes
-      #fi
-       #nombre del fichero será la ruta absoluta, sustituyendo la / por :::
-       #filesan=$(echo $1/$2|sed 's/\//:_:/g')
-      #if [ -e /usr/local/snapweb/.changes/$filesan ];then
-        #rm -fr /usr/local/snapweb/.changes/$filesan 
-      #fi
-      #mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
-        rm -fr $1/$2 2>/dev/null #Redirecciono error por problemas con pureftpd
-        echo "Se ha eliminado un fichero que había sido creado tras eliminar fichero">>/usr/local/snapweb/msg.log
+        cp -rfp /usr/local/snapweb/snap_back$1/$2 $1/$2 2>>/usr/local/snapweb/msg.log
+        exit
      fi 
     fi
 
@@ -300,59 +168,28 @@ elif [ "$3" = "IN_MOVED_FROM" ]; then #Fichero borrado o movido
       subdir=$(echo $1|cut -d/ -f$filas1- )
     if [ "$lock_on" = "0" ];then
       #Elimino de la monitorización --> Pendiente
-      #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
-      rm -fr $base/$subdir/$2
-      echo "Se ha borrado el fichero: $1/$2">>/usr/local/snapweb/msg.log
+      rm -fr /usr/local/snapweb/snap_back$1/$2
+      rm -fr /etc/incron.d/$(echo $1/$2|tr -d /) 2>/dev/null
     else
-      #Recupero el directorio del repositorio que tengo en snap_back!!
-      #echo "Recibido: $1 - $2 - $3 - $4">>/usr/local/snapweb/msg.log
-      #echo "Filas1: $filas1 y Filas2: $filas2">>/usr/local/snapweb/msg.log
       #Añado a la base los subdirectorios existentes
       if [ ! -e $1/$2 ]; then 
-      echo "Ruta final:$base/$subdir/$2">>/usr/local/snapweb/msg.log
-      if [ -e $base/$subdir/$2 ];then
-        cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
-        echo "Se ha intentado borrar el fichero: $1/$2, aunque se ha restaurado correctamente!">>/usr/local/snapweb/msg.log
-       else
-        echo "Se ha borrado el directorio: $1/$2 y no ha podido ser restaurado ya que no hay copia en backup">>/usr/local/snapweb/msg.log
-      fi
+      if [ -e /usr/local/snapweb/snap_back$1/$2 ];then
+        cp -rfp /usr/local/snapweb/snap_back$1/$2 $1 2>>/usr/local/snapweb/msg.log
     fi
     fi
 elif [ "$3" = "IN_DELETE" ]; then #Carpeta borrada
    if [ "$lock_on" = "0" ];then
-      #Elimino de la monitorización --> Pendiente
-      #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
-      #service incron restart
-      #Actualizo snap_back
-      base=$(base_snap $1)
-      row_count $base
-      filas1=$(echo $[$? + 1])
-      subdir=$(echo $1|cut -d/ -f$filas1- )
-      rm -fr $base/$subdir/$2
-      #echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
-      echo "Se ha eliminado el directorio: $1/$2">>/usr/local/snapweb/msg.log
+      rm -fr /usr/local/snapweb/snap_back$1/$2
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
-      #echo "Recibido: $1 - $2 - $3 - $4">>/usr/local/snapweb/msg.log
       if [ ! -e $1/$2 ]; then 
-      base=$(base_snap $1)
-      row_count $base
-      filas1=$(echo $[$? + 1])
-      #echo "Filas1: $filas1 y Filas2: $filas2">>/usr/local/snapweb/msg.log
       #Añado a la base los subdirectorios existentes
-      subdir=$(echo $1|cut -d/ -f$filas1- )
-      echo "Ruta final:$base/$subdir/$2">>/usr/local/snapweb/msg.log
-      if [ -e $base/$subdir/$2 ];then
-        cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
-        echo "Se ha intentado eliminar el directorio: $1/$2, aunque se ha restaurado correctamente!">>/usr/local/snapweb/msg.log
+      if [ -e /usr/local/snapweb/snap_back$1/$2 ];then
+        cp -rfp /usr/local/snapweb/snap_back$1/$2 $1 2>>/usr/local/snapweb/msg.log
       else
          rm -fr $1/$2
-        echo "Se ha eliminado el directorio: $1/$2 y no ha podido ser restaurado ya que no hay copia en backup">>/usr/local/snapweb/msg.log
       fi
     fi 
   fi
 fi
 exit
-
-#Falta eliminar de la monitorización los directorios borrados.
-#Hay que reflejar en /snap_back los cambios que están permitidos!!
