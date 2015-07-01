@@ -1,5 +1,25 @@
 # snapweb
 # Snapweb Project to freezer your site!!
 SnapWeb permite la monitorización de directorios impidiendo, en su caso, cambios en el mismo. Además, dispone de distintos tipos de bloqueos, permitiendo incluso, el análisis en tiempo real de malware.
+Actualmente la versión de testing sólo dispone de 2 tipos de bloqueos:
 
 USO:
+
+snapweb.sh /ruta/a/monitorizar
+
+CONFIGURACIÓN:
+Fichero /etc/snapweb.conf
+
+lock_on= 0 (Bloqueo desactivado)    |   1 (Bloqueo activado)
+	
+	lock_on = 0 --> SnapWeb permite y monitoriza cambios en el directorio pasado como parámetro.
+
+	lock_on = 1 --> SnapWeb impedirá cambios en el directorio pasado como parámetro. Dicho bloqueo afectará también a los distintos archivos y subdirectorios que contenga. Con este modo garantizamos la integridad de los ficheros de nuestro site.
+
+
+
+exclude_dir=/ruta/dir1;/ruta/dir2 [opcional]
+
+	Indicaremos el directorio/s que queremos excluir de la monitorización. Esta opción es especialmente interesante para permitir que, con el modo bloqueado activo, se puedan realizar ciertos cambios en algunas carpetas (caché, códigos captcha, etc.). Debe indicar su direccionamiento absoluto.
+
+	
