@@ -1,7 +1,7 @@
 # SNAPWEB
 # Snapweb Project: Congela tu web!!
 SnapWeb permite la monitorización de directorios impidiendo, en su caso, cambios en el mismo. Además, dispone de distintos tipos de bloqueos, permitiendo incluso, el análisis en tiempo real de malware.
-Actualmente la versión de testing sólo dispone de 2 tipos modos: Bloqueado y No Bloqueado.
+Actualmente la versión de testing sólo dispone de 2 tipos modos: Bloqueado y No Bloqueado. Además hace uso del paquete incron y se realiza su instalación automáticamente mediante el comando Debian apt-get, por lo que sólo se instalará de forma automática en sistemas Debian o similares.
 
 USO:
 
