@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+#Mail destino donde se recibirá el informe de firma de snapweb
+mail_destino=wllop@esat.es
+
 #Variables y sanitizamos $1 para poder crear el fichero en /etc/incron.d/$1 sin las /
 filesan=$(echo $1|tr -d /)
 filetmp=/tmp/JACK$filesan
@@ -28,12 +31,35 @@ if [ $? -ne 0 ];  then
    exit
  fi
 fi
-
+#Compruebo la opción -d
+if [ "$1" = "-d" ];then
+  if [ ! -d $2 ] || [ "$2" = "" ]; then
+    echo "La ruta pasada como parámetro NO es un directorio."
+    exit;
+  fi
+  filesan=$(echo $2|tr -d /)
+  if [ -d "/usr/local/snapweb/snap_back/$filesan" ];then #Compruebo que exista snap_back
+     rm -fr /etc/incron.d/$filesan* 2>/usr/local/snapweb/msg.log
+     if [ "$?" -eq 0 ];then
+       rm -fr "/usr/local/snapweb/snap_back/$filesan*" 2>/usr/local/snapweb/snap_back/msg.log
+        if [ "$?" -eq 0 ];then
+          echo "Se ha deshabilitado correctamente la monitorización de $2."
+          echo "Se ha deshabilitado la monitorización sobre el directorio $2"|mail -s "SNAPWEB: Firma eliminada." $mail_destino
+          exit
+        fi
+      fi
+      echo "Ups: Algo ha fallado al intentar deshabilitar el directorio $2. Inténtelo otra vez!"
+      exit
+  fi
+ echo "El directorio $2 no está siendo monitorizado."
+ exit
+fi
 #Comprobamos parámetros.
 if [ ! -d $1 ] || [ "$1" == "" ] || [ "$1" == "-h" ];
 then
   echo "La sintaxis es:"
-  echo "snapweb.sh /ruta/web"
+  echo "snapweb.sh [-d] /ruta/web"
+  echo " -d --> Desactiva la monitorización del directorio pasado como parámetro."
   exit
 fi
 
@@ -46,18 +72,18 @@ fi
 if [ ! -d "/usr/local/snapweb/snap_back/$filesan" ]; #Preparamos screenshots
 then
    cp -pfr $1 /usr/local/snapweb/snap_back/$filesan
-   echo "<?php mail(\"wllop@esat.es\",\"SECURITY REPORT - Nueva Firma\",\"Se ha creado una firma del directorio $1\");?>">$filetmp
-   php $filetmp
-   rm -fr $filetmp
+   ruta=$1
+   echo "${#ruta}">>/usr/local/snapweb/snap_back/$filesan/.ruta #Con esto convertiremos rutas absolutas en relativas a snap_back
+   echo "Se ha creado una nueva firma del directorio $1"|mail -s "SNAPWEB: Nueva Firma" $mail_destino
 else
    if [ -e /usr/local/snapweb/snap_back/$filesan.2 ]; then
        rm -fr /usr/local/snapweb/snap_back/$filesan.2 
    fi
+   ruta=$1
    mv -f /usr/local/snapweb/snap_back/$filesan /usr/local/snapweb/snap_back/$filesan.2
    cp -fpr $1 /usr/local/snapweb/snap_back/$filesan
-   echo "<?php mail(\"wllop@esat.es\",\"SECURITY REPORT - Nueva Firma\",\"Se ha creado una firma del directorio $1, se ha copiado un historial de dicho directorio.\");?>">$filetmp
-   php $filetmp
-   rm -fr $filetmp
+   echo "${#ruta}">>/usr/local/snapweb/snap_back/$filesan/.ruta #Con esto convertiremos rutas absolutas en relativas a snap_back
+   echo "Se ha creado una firma del directorio $1"|mail -s "SNAPWEB: Firma reemplazada" $mail_destino
 fi
 #Comprobamos que jack.sh estuviera en /usr/local/snapweb/snap_back, sino copiamos o bajamos con wget
 if [ ! -e /usr/local/snapweb/jack.sh ]; then
@@ -96,10 +122,10 @@ do
 done
 
 #Comprobar que la copia y el orginal son idénticos.
-if diff -rq $1 /usr/local/snapweb/snap_back/$filesan; then
-	echo "Registro del directorio $1 realizado con éxito."
+if diff -rq $1 /usr/local/snapweb/snap_back/$filesan|grep -v .ruta; then
+  echo "Hay diferencias entre el directorio $1 y el snapshot creado. Vuelva a lanzar el script."
 else
-	echo "Hay diferencias entre el directorio $1 y el snapshot creado. Vuelva a lanzar el script."
+  echo "Registro del directorio $1 realizado con éxito."
 fi
 
 service incron restart

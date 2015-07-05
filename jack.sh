@@ -19,7 +19,26 @@
 #$1 --> Ruta
 #$2 --> Fichero
 #$3 --> Evento
+row_count(){ #Para poder ir eliminado "directorios" hasta encontrar la base
+  IFS_OLD=$IFS
+  IFS=$/
+  i=$(echo $1|wc -w)
+  IFS=$IFS_OLD
+  return $i
+}
 
+base_snap(){ #Saber el directorio base_snap que está en snap_back
+  temp=$(echo $1|tr -d /)
+  if [ "$1" = "/" ];then
+    echo ""
+  elif [ -d /usr/local/snapweb/snap_back/$temp ];then
+    echo "/usr/local/snapweb/snap_back/$temp"
+  else
+  row_count $1
+  filas=$?
+  base_snap $(echo $1|cut -d/ -f1-$filas )
+  fi
+}
 buscar_excluidos(){ #Comprueba si $1 está en la lista de directorios a excluir de la monitorización
 IFS_OLD=$IFS
 IFS=';'
@@ -31,49 +50,36 @@ do
 done 
 IFS=$IFS_OLD
 }
-
+orig=$1
+base=$(base_snap $1) #/usr/local/snapweb/snap_back/rutadeldirectoriobase
+len=$(cat $base/.ruta)
+subdir=$(echo ${orig:$len})
 lock_on=$(grep -i "lock_on" /etc/snapweb.conf|cut -d= -f2)
 if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
     if [ "$lock_on" = "0" ];then
       #Actualizo snap_back
-      buscar_excluidos $1/$2
-      cp -pfr $1/$2 /usr/local/snapweb/snap_back$1/
+      buscar_excluidos $1
+      cp -pfr $1/$2 $base/$subdir/
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
     else
       #Mirar si lo que se quiere crear es una restauración en modo lock_on
-      if [  -e  /usr/local/snapweb/snap_back$1/$2 ] ; then 
-       #Es una restauración!!
-       cp -rfp /usr/local/snapweb/snap_back$1/$2 $1 2>>/usr/local/snapweb/msg.log
-
-       service incron restart #Reiniciar servicio para actualizar inodos
-      else
-      #Crear una carpeta .changes con lo q haya cambiado.
-      if [ ! -e /usr/local/snapweb/.changes ];then
-         mkdir -p /usr/local/snapweb/.changes
-         chmod 750 /usr/local/snapweb/.changes
-      fi
-       #nombre del fichero será la ruta absoluta, sustituyendo la / por :::
-       filesan=$(echo $1/$2|sed 's/\//:_:/g')
-      if [ -e /usr/local/snapweb/.changes/$filesan ];then
-         rm -fr /usr/local/snapweb/.changes/$filesan 
-      fi
-             buscar_excluidos $1/$2 ##
+      buscar_excluidos $1
        mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
      fi 
     fi
 elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
    if [ "$lock_on" = "0" ];then
-      rm -fr /usr/local/snapweb/snap_back$1/$2
+      rm -fr $base/$subdir/$2
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
       #Añado a la base los subdirectorios existentes
       while [ ! -e $1/$2 ];
       do   
        #Añado a la base los subdirectorios existentes 
-       if [ -e /usr/local/snapweb/snap_back$1/$2 ] && [ ! -e $1/$2 ];then
+       if [ -e $base/$subdir/$2 ] && [ ! -e $1/$2 ];then
         #if [ ! -e $1 ];then
-        cp -rfp /usr/local/snapweb/snap_back$1/$2 $1 2>>/usr/local/snapweb/msg.log
+        cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
         service incron restart
         sleep 6
         fi
@@ -82,7 +88,7 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
 elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
     if [ "$lock_on" = "0" ];then
-      cp -fpr $1/$2 /usr/local/snapweb/snap_back$1/
+      cp -fpr $1/$2 $base/$subdir/
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
     else
       rm -fr $1/$2 2>>/usr/local/snapweb/msg.log
@@ -90,26 +96,25 @@ elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
 
 elif [ "$3" = "IN_MOVED_FROM,IN_ISDIR" ]; then #Carpeta borrada
     if [ "$lock_on" = "0" ];then
-      rm -fr /usr/local/snapweb/snap_back$1/$2 2>/dev/null
+      rm -fr $base/$subdir/$2 2>/dev/null
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
       if [ ! -e $1/$2 ]; then 
-      if [ -e /usr/local/snapweb/snap_back$1/$2 ];then
-        cp -rfp /usr/local/snapweb/snap_back$1/$2 $1 2>>/usr/local/snapweb/msg.log
+      if [ -e $base/$subdir/$2 ];then
+        cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
         service incron restart
       fi
     fi
   fi
 elif [ "$3" = "IN_CREATE" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
-      
     if [ "$lock_on" = "0" ];then
-      cp -fpr $1/$2 /usr/local/snapweb/snap_back$1/
+      cp -fpr $1/$2 $base/$subdir/
     else   
       #Mirar si lo que se quiere crear es una restauración en modo lock_on
-      if [  -e  /usr/local/snapweb/snap_back$1/$2 ] ; then 
+      if [  -e  $base/$subdir/$2 ] ; then 
        #Es una restauración!!
-       cp -fpr  /usr/local/snapweb/snap_back$1/$2 $1
+       cp -fpr  $base/$subdir/$2 $1
        exit
 	    else
       #Crear una carpeta .changes con lo q haya cambiado.
@@ -128,22 +133,22 @@ elif [ "$3" = "IN_CREATE" ]; then #Nueva carpeta creada!
 elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero eliminado!
     #Activo el registro de la carpeta!
     if [ "$lock_on" = "0" ];then
-      cp -fpr $1/$2 /usr/local/snapweb/snap_back$1
+      cp -fpr $1/$2 $base/$subdir
     else
       #Mirar si lo que se quiere crear es una restauración en modo lock_on
-        rm -fr $1/$2 2>/dev/null #Redirecciono error por problemas con pureftpd
+        if [ ! -e $base/$subdir/$2 ];then
+         rm -fr $1/$2 2>/dev/null #Redirecciono error por problemas con pureftpd
+        fi
     fi
 elif [ "$3" = "IN_CLOSE_WRITE" ]; then # fichero CAMBIADO!
     #Activo el registro de la carpeta!
-     echo "Evento INCLOSE_WRITE lock_on=$lock_on">>/usr/local/snapweb/msg.log
-    if [ "$lock_on" = "0" ];then
-      echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$1/\$2 \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
-      cp -fpr $1/$2 /usr/local/snapweb/snap_back$1
+     if [ "$lock_on" = "0" ];then
+      cp -fpr $1/$2 $base/$subdir/
     else
       #Mirar si HAY cambios 
-      if  ! diff  /usr/local/snapweb/snap_back$1/$2 $1/$2 ;then 
+      if  ! diff  $base/$subdir/$2 $1/$2 ;then 
        #Es una restauración!!
-        cp -rfp /usr/local/snapweb/snap_back$1/$2 $1/ 2>>/usr/local/snapweb/msg.log
+        cp -rfp $base/$subdir/$2 $1/ 2>>/usr/local/snapweb/msg.log
         exit
      fi 
     fi
@@ -151,25 +156,25 @@ elif [ "$3" = "IN_CLOSE_WRITE" ]; then # fichero CAMBIADO!
 elif [ "$3" = "IN_MOVED_FROM" ]; then #Fichero borrado o movido
     if [ "$lock_on" = "0" ];then
       #Elimino de la monitorización --> Pendiente
-      rm -fr /usr/local/snapweb/snap_back$1/$2
+      rm -fr $base/$subdir/$2
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
       #Añado a la base los subdirectorios existentes
       if [ ! -e $1/$2 ]; then 
-      if [ -e /usr/local/snapweb/snap_back$1/$2 ];then
-        cp -rfp /usr/local/snapweb/snap_back$1/$2 $1 2>>/usr/local/snapweb/msg.log
+      if [ -e $base/$subdir/$2 ];then
+        cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
     fi
     fi
   fi
 elif [ "$3" = "IN_DELETE" ]; then #Fichero borrado
    if [ "$lock_on" = "0" ];then
-      rm -fr /usr/local/snapweb/snap_back$1/$2
+      rm -fr $base/$subdir/$2
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
       if [ ! -e $1/$2 ]; then 
       #Añado a la base los subdirectorios existentes
-      if [ -e /usr/local/snapweb/snap_back$1/$2 ];then
-        cp -rfp /usr/local/snapweb/snap_back$1/$2 $1 2>>/usr/local/snapweb/msg.log
+      if [ -e $base/$subdir/$2 ];then
+        cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
       else
          rm -fr $1/$2
       fi
