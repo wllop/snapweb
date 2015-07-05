@@ -104,12 +104,16 @@ fi
 #Damos de alta el fichero en el directorio /etc/incron.d
 if [ ! -e /etc/snapweb.conf ];
   then
+    if [ -e ./snapweb.conf ]; then
+    cp -f ./snapweb.conf /etc/snapweb.conf
+   else
     echo "Descargando fichero de configuracion...."
     wget -nv -T 15 http://desa.webnet.es/snapweb/snapweb.conf -O /etc/snapweb.conf >/dev/null 2>/dev/null
-    if [ ! -e /etc/snapweb.conf ]; then
+   fi
+   if [ ! -e /etc/snapweb.conf ]; then
       echo "Error: No ha sido posible obtener el fichero de configuracion snapweb.cfg. Inténtelo más tarde. Gracias."
       exit
-    fi 
+  fi 
 fi
 
 if [ -e /etc/incron.d/$filesan ];
