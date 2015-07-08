@@ -14,9 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+#################### I N O T I F Y 
+#Aumento el número de ficheros a monitorizar (si es necesario)!!
+#sysctl -w fs.inotify.max_user_watches=524288
+#sysctl -p 
+#Miro si en el fichero /etc/sysctl.conf ya está el valor dado de alta, sino, lo doy.d
+#echo fs.inotify.max_user_watches=524288 >>/etc/sysctl.conf
+####################################
+
 #Mail destino donde se recibirá el informe de firma de snapweb
 mail_destino=wllop@esat.es
-
 #Variables y sanitizamos $1 para poder crear el fichero en /etc/incron.d/$1 sin las /
 filesan=$(echo $1|tr -d /)
 filetmp=/tmp/JACK$filesan
@@ -120,10 +127,21 @@ if [ -e /etc/incron.d/$filesan ];
 then
    rm -f /etc/incron.d/$filesan*
 fi
-for file in $(find $1 -type d)
+#Excluyos los directorios indicados en la variable exclude_dir
+excl_dire=$(grep exclude_dir /etc/snapweb.conf|cut -d= -f2)
+if [ "$excl_dire" != "" ]; then
+  patt=$(echo "$excl_dire"|sed 's/;/ -e /g')
+  patt="grep -v -e $patt"
+  for file in $(find $1 -type d | $patt)
+   do 
+    echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
+   done
+else
+  for file in $(find $1 -type d $patt)
 do 
  echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
 done
+fi
 
 #Comprobar que la copia y el orginal son idénticos.
 if diff -rq $1 /usr/local/snapweb/snap_back/$filesan|grep -v .ruta; then

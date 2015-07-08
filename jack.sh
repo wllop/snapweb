@@ -87,7 +87,8 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
   fi
 elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
-    if [ "$lock_on" = "0" ];then
+     buscar_excluidos $1
+     if [ "$lock_on" = "0" ];then
       cp -fpr $1/$2 $base/$subdir/
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
     else
