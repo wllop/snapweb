@@ -63,8 +63,24 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
       cp -pfr $1/$2 $base/$subdir/
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
     else
-      #Mirar si lo que se quiere crear es una restauración en modo lock_on
-      buscar_excluidos $1
+      #Mirar si lo que se quiere crear es una restauraciÃ³n en modo lock_on
+      if [  -e  $base/$subdir/$2 ] ; then 
+       #Es una restauraciÃ³n!!
+       cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
+
+       service incron restart #Reiniciar servicio para actualizar inodos
+      else
+      #Crear una carpeta .changes con lo q haya cambiado.
+      if [ ! -e /usr/local/snapweb/.changes ];then
+         mkdir -p /usr/local/snapweb/.changes
+         chmod 750 /usr/local/snapweb/.changes
+      fi
+       #nombre del fichero serÃ¡ la ruta absoluta, sustituyendo la / por :::
+       filesan=$(echo $1/$2|sed 's/\//:_:/g')
+      if [ -e /usr/local/snapweb/.changes/$filesan ];then
+         rm -fr /usr/local/snapweb/.changes/$filesan 
+      fi
+             buscar_excluidos $1
        mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
      fi 
     fi
