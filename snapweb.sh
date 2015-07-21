@@ -52,14 +52,16 @@ if ! installed incrond ; then
        fi
   fi
 fi
+
+[ ! -d /usr/local/snapweb ] && mkdir -p -m 750 /usr/local/snapweb 
 #Comprobamos que jack.sh estuviera en /usr/local/snapweb/snap_back, sino copiamos o bajamos con wget
 if [ ! -e /usr/local/snapweb/jack.sh ]; then
-  [ -e ./jack.sh ] && cp -f ./jack.sh /usr/local/snapweb 2>/dev/null >/dev/null && chmod a+x /usr/local/snapweb/jack.sh 2>/dev/null >/dev/null || E=3 fatal "Es necesario el fichero jack.sh para continuar."
+  [ -e $PWD/jack.sh ] && cp -f $PWD/jack.sh /usr/local/snapweb 2>/dev/null >/dev/null && chmod a+x /usr/local/snapweb/jack.sh 2>/dev/null >/dev/null || E=3 fatal "Es necesario el fichero jack.sh para continuar."
 fi 
 
 #Damos de alta el fichero de configuración en /etc/snapweb.conf
 if [ ! -e /etc/snapweb.conf ]; then
-  [ -e ./snapweb.conf ] && cp -f ./snapweb.conf /etc/snapweb.conf || E=4 fatal "No ha sido posible obtener el fichero de configuracion snapweb.conf, inténtelo más tarde. Gracias."
+  [ -e $PWD/snapweb.conf ] && cp -f $PWD/snapweb.conf /etc/snapweb.conf || E=4 fatal "No ha sido posible obtener el fichero de configuracion snapweb.conf, inténtelo más tarde. Gracias."
 fi
 
 #Compruebo la opción -d
