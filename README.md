@@ -20,6 +20,15 @@ lock_on= 0 (Bloqueo desactivado)    |   1 (Bloqueo activado)
 	lock_on = 1 --> SnapWeb impedirá cambios en el directorio pasado como parámetro. Dicho bloqueo afectará también a los distintos archivos y subdirectorios que contenga. Con este modo garantizamos la integridad de los ficheros de nuestro site.
 
 
+Fichero /etc/firmasAV.txt
+	Permite indicar una serie de palabras que pueden ser utilizadas por el malware junto con un valor númerico. 
+	Ejemplo:
+		phpinfo:4
+		curl_exec:8
+		iframe:2
+		\x:3
+
+	La ponderación de cada palabra se utilizará en el modo automático para determinar qué hacer. En modo site_lock=0, en sistema enviará un mail de aviso cuando se detecte una palabra de las mostradas en /etc/firmasAV.txt
 
 exclude_dir=/ruta/dir1;/ruta/dir2 [opcional]
 

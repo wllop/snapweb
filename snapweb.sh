@@ -63,6 +63,10 @@ fi
 if [ ! -e /etc/snapweb.conf ]; then
   [ -e $PWD/snapweb.conf ] && cp -f $PWD/snapweb.conf /etc/snapweb.conf || E=4 fatal "No ha sido posible obtener el fichero de configuracion snapweb.conf, inténtelo más tarde. Gracias."
 fi
+#Damos de alta el fichero de firmas en /etc/firmasAV.txt
+if [ ! -e /etc/firmasAV.txt ]; then
+  [ -e $PWD/firmasAV.txt ] && cp -f $PWD/firmasAV.txt /etc/firmasAV.txt || E=5 fatal "No ha sido posible obtener el fichero de firmas firmasAV.txt, inténtelo más tarde. Gracias."
+fi
 
 #Compruebo la opción -d
 if [ "$1" = "-d" ];then
