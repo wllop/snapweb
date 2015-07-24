@@ -1,7 +1,6 @@
 phpinfo:4
 curl:7
 exec:4
-\x:2
 iframe:6
 system:4
 shell_exec=10
