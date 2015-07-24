@@ -27,6 +27,7 @@
 installed(){ type -p "$1" 2>/dev/null >/dev/null;}
 fatal(){ echo ; echo "Error: $@" >&2;${E:+exit $E};}
 help () {
+clear
 echo "La sintaxis es:"
 echo "snapweb.sh [-d] /ruta/web"
 echo " -d --> Desactiva la monitorización del directorio pasado como parámetro."
