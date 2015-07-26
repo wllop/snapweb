@@ -104,6 +104,7 @@ if [ ! -d "/usr/local/snapweb/snap_back/$filesan" ]; #Preparamos screenshots
 then
    cp -pfr $1 /usr/local/snapweb/snap_back/$filesan
    ruta=$1
+   touch /usr/local/snapweb/snap_back/$filesan/.ruta
    echo "${#ruta}">>/usr/local/snapweb/snap_back/$filesan/.ruta #Con esto convertiremos rutas absolutas en relativas a snap_back
    echo "Se ha creado una nueva firma del directorio $1"|mail -s "SNAPWEB: Nueva Firma" $mail_destino
 else
