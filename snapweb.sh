@@ -104,15 +104,14 @@ if [ ! -d "/usr/local/snapweb/snap_back/$filesan" ]; #Preparamos screenshots
 then
    cp -pfr $1 /usr/local/snapweb/snap_back/$filesan
    ruta=$1
-   touch /usr/local/snapweb/snap_back/$filesan/.ruta
-   echo "${#ruta}">>/usr/local/snapweb/snap_back/$filesan/.ruta #Con esto convertiremos rutas absolutas en relativas a snap_back
+   echo "${#ruta}">/usr/local/snapweb/snap_back/$filesan/.ruta #Con esto convertiremos rutas absolutas en relativas a snap_back
    echo "Se ha creado una nueva firma del directorio $1"|mail -s "SNAPWEB: Nueva Firma" $mail_destino
 else
    [ -e /usr/local/snapweb/snap_back/$filesan.2 ] && rm -fr /usr/local/snapweb/snap_back/$filesan.2 
    ruta=$1
    mv -f /usr/local/snapweb/snap_back/$filesan /usr/local/snapweb/snap_back/$filesan.2
    cp -fpr $1 /usr/local/snapweb/snap_back/$filesan
-   echo "${#ruta}">>/usr/local/snapweb/snap_back/$filesan/.ruta #Con esto convertiremos rutas absolutas en relativas a snap_back
+   echo "${#ruta}">/usr/local/snapweb/snap_back/$filesan/.ruta #Con esto convertiremos rutas absolutas en relativas a snap_back
    echo "Se ha creado una firma del directorio $1"|mail -s "SNAPWEB: Firma reemplazada" $mail_destino
 fi
 
@@ -139,6 +138,6 @@ if diff -rq $1 /usr/local/snapweb/snap_back/$filesan|grep -v .ruta; then
 else
   echo "Registro del directorio $1 realizado con éxito."
 fi
-
+cp -f ./snapweb.sh /usr/local/sbin >/dev/null 2>&1
 service incron restart
 
