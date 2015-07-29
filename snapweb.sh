@@ -39,7 +39,7 @@ list () {
 echo "Directorios monitorizados:"
 for dir in $(find /usr/local/snapweb/snap_back/* -maxdepth 0 -type d)
 do
-	cat $dir/.ruta
+	cat $dir/.rutaabs
 done
 exit
 }
@@ -128,6 +128,7 @@ then
    cp -pfr $1 /usr/local/snapweb/snap_back/$filesan
    ruta=$1
    echo "${#ruta}">/usr/local/snapweb/snap_back/$filesan/.ruta #Con esto convertiremos rutas absolutas en relativas a snap_back
+   echo "$ruta">/usr/local/snapweb/snap_back/$filesan/.rutaabs
    echo "Se ha creado una nueva firma del directorio $1"|mail -s "SNAPWEB: Nueva Firma" $mail_destino
 else
    [ -e /usr/local/snapweb/snap_back/$filesan.2 ] && rm -fr /usr/local/snapweb/snap_back/$filesan.2 
