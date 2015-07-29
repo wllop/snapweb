@@ -5,3 +5,4 @@ iframe:6
 system:4
 shell_exec=10
 ${:4
+eval(base64_decode:10
