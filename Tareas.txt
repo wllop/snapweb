@@ -1,0 +1,2 @@
+* Añadir funciones commit y rollback --> Descartado, no hay un único commit y rollback, dependiendo del evento.
+* Cambiar if por CASE para añadir los múltiples tipos de bloqueos!!

@@ -31,6 +31,15 @@ clear
 echo "La sintaxis es:"
 echo "snapweb.sh [-d] /ruta/web"
 echo " -d --> Desactiva la monitorización del directorio pasado como parámetro."
+echo " -l --> Lista los directorios que están siendo monitorizados por SnapWeb."
+exit
+}
+list () {
+echo "Directorios monitorizados:"
+for dir in $(find /usr/local/snapweb/snap_back/* -maxdepth 0 -type d)
+do
+	cat $dir/.ruta
+done
 exit
 }
 
@@ -97,6 +106,10 @@ then
   help
 fi
 
+#Comprobamos listado
+if [ "$1" == "-l" ]; then
+	list
+fi
 #Compruebo que el directorio de las snap exista
 [ ! -d /usr/local/snapweb/snap_back ] && mkdir -p -m 750 /usr/local/snapweb/snap_back 2>/dev/null
 
