@@ -29,11 +29,12 @@ fatal(){ echo ; echo "Error: $@" >&2;${E:+exit $E};}
 help () {
 clear
 echo "La sintaxis es:"
-echo "snapweb.sh [-d] /ruta/web"
-echo " -d --> Desactiva la monitorización del directorio pasado como parámetro."
+echo "snapweb.sh [-d] | [-l] /ruta/web"
+echo " -d /ruta/web --> Desactiva la monitorización del directorio pasado como parámetro."
 echo " -l --> Lista los directorios que están siendo monitorizados por SnapWeb."
 exit
 }
+
 list () {
 echo "Directorios monitorizados:"
 for dir in $(find /usr/local/snapweb/snap_back/* -maxdepth 0 -type d)
@@ -101,7 +102,7 @@ if [ "$1" = "-d" ];then
 fi
 
 #Comprobamos ayuda.
-if [ ! -d $1 ] || [ "$1" == "" ] || [ "$1" == "-h" ];
+if [ "$1" == "" ] || [ "$1" == "-h" ];
 then
   help
 fi
@@ -110,6 +111,15 @@ fi
 if [ "$1" == "-l" ]; then
 	list
 fi
+
+#Compruebo que $1 sea un directorio.
+
+if [ ! -d $1 ];
+	then
+	echo "La ruta pasada como parámetro NO es un directorio."
+    exit;
+fi
+
 #Compruebo que el directorio de las snap exista
 [ ! -d /usr/local/snapweb/snap_back ] && mkdir -p -m 750 /usr/local/snapweb/snap_back 2>/dev/null
 
