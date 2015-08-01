@@ -154,7 +154,8 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
       0)total=($(check $1/$2))
         echo ${total[0]} >>/usr/local/snapweb/msg.log
         if [ ${total[0]} -gt 5 ]; then #Controlar
-          echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}"|mail -s "SNAPWEB: Código sospechoso " $mail_destino
+     		content=$(cat $1/$2)
+          echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]} \nContenido: $content"|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2
         fi
         cp -fpr $1/$2 $base/$subdir/
         ;;
@@ -184,7 +185,8 @@ elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero eliminado!
       0)total=($(check $1/$2))
         echo ${total[0]} >>/usr/local/snapweb/msg.log
         if [ ${total[0]} -gt 5 ]; then #Controlar
-          echo "Se ha creado un nuevo fichero $1/$2 con código sospecho:${total[*]}"|mail -s "SNAPWEB: Código sospechoso " $mail_destino
+     		content=$(cat $1/$2)
+          echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]} \nContenido: $content"|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2
         fi
         cp -fpr $1/$2 $base/$subdir
         ;;    
@@ -201,7 +203,8 @@ elif [ "$3" = "IN_CLOSE_WRITE" ]; then # fichero CAMBIADO!
      0)total=($(check $1/$2))
         echo ${total[0]} >>/usr/local/snapweb/msg.log
         if [ ${total[0]} -gt 5 ]; then #Controlar
-          echo "Se ha añadido al fichero $1/$2 información con código sospecho:${total[*]}"|mail -s "SNAPWEB: Código sospechoso " $mail_destino
+     		content=$(cat $1/$2)
+          echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]} \nContenido: $content"|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2
         fi 
         cp -fpr $1/$2 $base/$subdir/
         ;;
