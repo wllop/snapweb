@@ -9,13 +9,14 @@ snapweb.sh [-d] /ruta/a/monitorizar
 
 OPCIONES:
 -d --> Deja de monitorizar la ruta pasada como parámetro. NO elimina la ruta pasada como parámetro, pero sí la copia de respaldo utilizada por snapweb ubicada en /usr/local/snapweb/snap_back
+-l --> Lista los directorios monitorizados.
 
 CONFIGURACIÓN:
 Fichero /etc/snapweb.conf
 
 lock_on= 0 (Bloqueo desactivado)    |   1 (Bloqueo activado)
 	
-	lock_on = 0 --> SnapWeb permite y monitoriza cambios en el directorio pasado como parámetro.
+	lock_on = 0 --> SnapWeb permite y monitoriza cambios en el directorio pasado como parámetro. Cuando detecta código sospechoso envía, en caso de tener instalado el cliente mutt, el fichero como adjunto por correo. Si no se dispone de mutt se hace uso del comando mail(), integrando en el correo el fichero sospechoso pero NO se adjunta dicho fichero.
 
 	lock_on = 1 --> SnapWeb impedirá cambios en el directorio pasado como parámetro. Dicho bloqueo afectará también a los distintos archivos y subdirectorios que contenga. Con este modo garantizamos la integridad de los ficheros de nuestro site.
 
@@ -37,7 +38,7 @@ exclude_dir=/ruta/dir1;/ruta/dir2 [opcional]
 Próximas mejoras:
 	* Modo automático: Analiza en tiempo real cualquier cambio, categoriza dichos cambios y decide qué hacer.
  
-	* Modo semiautomático:
+	* Modo semiautomático: 
  
 	* Configuración del modo por site: Ahora los modos de bloqueo pueden indicarse por site, en vez de un único tipo de bloqueo para todos los sites albergados.
 	* Administración y monitorización de snapweb vía App.
