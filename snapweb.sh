@@ -22,6 +22,10 @@
 #sysctl -p 
 #Miro si en el fichero /etc/sysctl.conf ya está el valor dado de alta, sino, lo doy.d
 #echo fs.inotify.max_user_watches=524288 >>/etc/sysctl.conf
+# sudo sysctl fs.inotify.max_user_watches= with your preferred value at the end.
+#Permanently:
+#Replace the value within the /proc/sys/fs/inotify/max_user_watches file with your own, i.e echo 524288 | sudo tee -a /proc/sys/fs/inotify/max_user_watches.
+
 ####################################
 ##Funciones
 installed(){ type -p "$1" 2>/dev/null >/dev/null;}
@@ -37,7 +41,7 @@ exit
 
 list () {
 echo "Directorios monitorizados:"
-for dir in $(find /usr/local/snapweb/snap_back/* -maxdepth 0 -type d)
+for dir in $(find /usr/local/snapweb/snap_back/* -maxdepth 0 -type d|grep -v "\.2")
 do
 	cat $dir/.rutaabs
 done
