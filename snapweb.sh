@@ -161,7 +161,7 @@ done
 fi
 
 #Comprobar que la copia y el orginal son idénticos.
-if diff -rq $1 /usr/local/snapweb/snap_back/$filesan|grep -v .ruta; then
+if diff -rq $1 /usr/local/snapweb/snap_back/$filesan|grep -v .ruta >/dev/null 2>&1; then
   echo "Hay diferencias entre el directorio $1 y el snapshot creado. Vuelva a lanzar el script."
 else
   echo "Registro del directorio $1 realizado con éxito."
