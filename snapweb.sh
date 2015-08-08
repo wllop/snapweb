@@ -166,6 +166,12 @@ if diff -rq $1 /usr/local/snapweb/snap_back/$filesan|grep -v .ruta; then
 else
   echo "Registro del directorio $1 realizado con éxito."
 fi
-cp -f ./snapweb.sh /usr/local/sbin >/dev/null 2>&1
+if ! type -p snapweb.sh; then
+   echo "Snapweb no está incluido en la variable PATH."
+   read -n 1 -p "¿Desea incluirlo en /usr/local/sbin (S/n)" res
+   if [ "res" != "n" ]; then
+    cp -f ./snapweb.sh /usr/local/sbin/snapweb.sh
+   fi
+fi
 service incron restart
 
