@@ -35,15 +35,19 @@ exclude_dir=ruta/dir1;ruta/dir2 [opcional]
 
 	Indicaremos el directorio/s que queremos excluir de la monitorización. Esta opción es especialmente interesante para permitir que, con el modo bloqueado activo, se puedan realizar ciertos cambios en algunas carpetas (caché, códigos captcha, etc.). Debe indicar su direccionamiento relativo desde el directorio monitorizado.
 
+
 Próximas mejoras:
 	* Modo automático: Analiza en tiempo real cualquier cambio, categoriza dichos cambios y decide qué hacer.
  
 	* Modo semiautomático: 
  
 	* Configuración del modo por site: Ahora los modos de bloqueo pueden indicarse por site, en vez de un único tipo de bloqueo para todos los sites albergados.
+
 	* Administración y monitorización de snapweb vía App.
 
-
+ACTUALIZAR:
+	Una vez creado el repositorio github en el sistema, se puede hacer uso del script update.sh para comprobar actualizaciones del repositorio y actualizar los ficheros jack.sh y snapweb.sh.
+	
 Cualquier comentario, error o mejora enviadlo a wllop@esat.es. 
 Muchas gracias!!
 @wllop
