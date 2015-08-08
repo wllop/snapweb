@@ -16,7 +16,7 @@
 #
 fatal(){ echo ; echo "Error: $@" >&2;${E:+exit $E};}
 installed(){ type -p "$1" 2>/dev/null >/dev/null;}
-[ -d .git ] && git pull || E1 fatal "Para poder lanzar la actualización de SnapWeb a través de update.sh, debe estar ubicado en el directorio del repositorio git." 
+[ -d .git ] && git pull || E=1 fatal "Para poder lanzar la actualización de SnapWeb a través de update.sh, debe estar ubicado en el directorio del repositorio git." 
 if ruta=$(type -p snapweb.sh); then 
   if ! diff -rq ./snapweb.sh $ruta >/dev/null 2>&1 ;then
    cp -f ./snapweb.sh $ruta
