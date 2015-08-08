@@ -31,9 +31,9 @@ Fichero /etc/firmasAV.txt
 
 	La ponderación de cada palabra se utilizará en el modo automático para determinar qué hacer. En modo site_lock=0, en sistema enviará un mail de aviso cuando se detecte una palabra de las mostradas en /etc/firmasAV.txt
 
-exclude_dir=/ruta/dir1;/ruta/dir2 [opcional]
+exclude_dir=ruta/dir1;ruta/dir2 [opcional]
 
-	Indicaremos el directorio/s que queremos excluir de la monitorización. Esta opción es especialmente interesante para permitir que, con el modo bloqueado activo, se puedan realizar ciertos cambios en algunas carpetas (caché, códigos captcha, etc.). Debe indicar su direccionamiento absoluto.
+	Indicaremos el directorio/s que queremos excluir de la monitorización. Esta opción es especialmente interesante para permitir que, con el modo bloqueado activo, se puedan realizar ciertos cambios en algunas carpetas (caché, códigos captcha, etc.). Debe indicar su direccionamiento relativo desde el directorio monitorizado.
 
 Próximas mejoras:
 	* Modo automático: Analiza en tiempo real cualquier cambio, categoriza dichos cambios y decide qué hacer.

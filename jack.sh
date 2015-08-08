@@ -67,9 +67,11 @@ base_snap(){ #Saber el directorio base_snap que está en snap_back
 buscar_excluidos(){ #Comprueba si $1 está en la lista de directorios a excluir de la monitorización
 IFS_OLD=$IFS
 IFS=';'
+base=$(base_snap $1)
+rutaabs=$(cat $base/.rutaabs|tr -s /)
 for var in $(grep -i "exclude_dir" /etc/snapweb.conf|cut -d= -f2)
 do
-  if [ "$var" = "$1" ];then
+  if [ "$rutaabs/$var" = "$1" ];then
       exit
   fi
 done 
@@ -84,7 +86,7 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
     case "$lock_on" in  #Tipo bloqueo
       0) #Monitorizar
-        buscar_excluidos $1
+        buscar_excluidos $1/$2
         cp -pfr $1/$2 $base/$subdir/
         echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
         ;;
@@ -104,7 +106,7 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
           if [ -e /usr/local/snapweb/.changes/$filesan ];then
             rm -fr /usr/local/snapweb/.changes/$filesan 
           fi
-          buscar_excluidos $1
+          buscar_excluidos $1/$2
           mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
         fi
         ;;
@@ -128,7 +130,7 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
   fi
 elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
-     buscar_excluidos $1
+     buscar_excluidos $1/$2
      if [ "$lock_on" = "0" ];then
       cp -fpr $1/$2 $base/$subdir/
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
@@ -152,7 +154,7 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
     #Activo el registro de la carpeta!
     case "$lock_on" in
       0)total=($(check $1/$2))
-        echo ${total[0]} >>/usr/local/snapweb/msg.log
+        #echo ${total[0]} >>/usr/local/snapweb/msg.log
         if [ ${total[0]} -gt 5 ]; then #Controlar
      		content=$(cat $1/$2)
           echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
