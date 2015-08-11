@@ -93,7 +93,7 @@ if [ "$1" = "-d" ];then
   if [ -d "/usr/local/snapweb/snap_back/$filesan" ];then #Compruebo que exista snap_back
      rm -fr /etc/incron.d/$filesan* 2>/usr/local/snapweb/msg.log
      if [ "$?" -eq 0 ];then
-       rm -fr "/usr/local/snapweb/snap_back/$filesan*" 2>/usr/local/snapweb/snap_back/msg.log
+       rm -fr /usr/local/snapweb/snap_back/$filesan 2>/usr/local/snapweb/snap_back/msg.log
         if [ "$?" -eq 0 ];then
           echo "Se ha deshabilitado correctamente la monitorización de $2."
           echo "Se ha deshabilitado la monitorización sobre el directorio $2"|mail -s "SNAPWEB: Firma eliminada." $mail_destino

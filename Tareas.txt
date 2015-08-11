@@ -1,5 +1,6 @@
-* Añadir funciones commit y rollback --> Descartado, no hay un único commit y rollback, dependiendo del evento.
 * Cambiar if por CASE para añadir los múltiples tipos de bloqueos!! --> Hecho
 * Escaneo ficheros nuevos o modificados --> Hecho
 * Directorios a excluir serán con ruta relativa!! (Hecho)
-* Hacer un update que copie jack.sh a /usr/local/snapweb/, snapweb.sh y revisar los archivos de firmas.
+* Hacer un update que copie jack.sh a /usr/local/snapweb/, snapweb.sh y revisar los archivos de firmas. --> hecho! update.sh
+* Copiar snapweb.sh en PATH!! --> Hecho
+* Comprobar valores inotify!!
