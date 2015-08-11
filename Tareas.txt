@@ -3,4 +3,6 @@
 * Directorios a excluir serán con ruta relativa!! (Hecho)
 * Hacer un update que copie jack.sh a /usr/local/snapweb/, snapweb.sh y revisar los archivos de firmas. --> hecho! update.sh
 * Copiar snapweb.sh en PATH!! --> Hecho
+* Indicar en /etc/snapweb.conf el mail donde se recibirán las notificaciones. Campo: email_receipt:
 * Comprobar valores inotify!!
+* Cuando detecte código sospechoso que envíe diferencias.

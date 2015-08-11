@@ -19,7 +19,7 @@
 #$1 --> Ruta
 #$2 --> Fichero
 #$3 --> Evento
-mail_destino="wllop@esat.es"
+
 fatal(){ echo ; echo "Error: $@" >&2;${E:+exit $E};}
 
 check(){
@@ -157,6 +157,7 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
         #echo ${total[0]} >>/usr/local/snapweb/msg.log
         if [ ${total[0]} -gt 5 ]; then #Controlar
      		content=$(cat $1/$2)
+        mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
           echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
         fi
         cp -fpr $1/$2 $base/$subdir/
@@ -188,6 +189,7 @@ elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero eliminado!
         echo ${total[0]} >>/usr/local/snapweb/msg.log
         if [ ${total[0]} -gt 5 ]; then #Controlar
      		content=$(cat $1/$2)
+        mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
           echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
         fi
         cp -fpr $1/$2 $base/$subdir
@@ -206,6 +208,7 @@ elif [ "$3" = "IN_CLOSE_WRITE" ]; then # fichero CAMBIADO!
         echo ${total[0]} >>/usr/local/snapweb/msg.log
         if [ ${total[0]} -gt 5 ]; then #Controlar
      		content=$(cat $1/$2)
+        mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
           echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
         fi 
         cp -fpr $1/$2 $base/$subdir/
