@@ -41,10 +41,14 @@ exit
 
 list () {
 echo "Directorios monitorizados:"
+echo "--------------------------"
 for dir in $(find /usr/local/snapweb/snap_back/* -maxdepth 0 -type d|grep -v "\.2")
 do
 	cat $dir/.rutaabs
 done
+if [ "$dir" = "" ]; then
+   echo "No hay directorios monitorizados"
+fi
 exit
 }
 
