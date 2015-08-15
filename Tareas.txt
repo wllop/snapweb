@@ -6,3 +6,5 @@
 * Indicar en /etc/snapweb.conf el mail donde se recibirán las notificaciones. Campo: email= --> Hecho
 * Comprobar valores inotify!!
 * Cuando detecte código sospechoso que envíe diferencias.
+* En modo sitelock=1 q notifique nuevos archivos.
+* Que update indique si quiere añadir nuevas firmas si se encuentra firmasAV.txt
