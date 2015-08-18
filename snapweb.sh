@@ -39,7 +39,7 @@ echo " -l --> Lista los directorios que están siendo monitorizados por SnapWeb.
 exit
 }
 totales(){ ##Total de ficheros en un directorio - Recursivo
-[ ! -d $1 ] && exit 0
+[ ! -d $1 ] && echo 0 && exit
 total=0
 for fich in $(find $1 -xdev -type f 2>/dev/null)
 do
