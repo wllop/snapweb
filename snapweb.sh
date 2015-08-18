@@ -25,7 +25,7 @@
 # sudo sysctl fs.inotify.max_user_watches= with your preferred value at the end.
 #Permanently:
 #Replace the value within the /proc/sys/fs/inotify/max_user_watches file with your own, i.e echo 524288 | sudo tee -a /proc/sys/fs/inotify/max_user_watches.
-
+#Default value=8192!! 32bits
 ####################################
 ##Funciones
 installed(){ type -p "$1" 2>/dev/null >/dev/null;}
@@ -38,17 +38,34 @@ echo " -d /ruta/web --> Desactiva la monitorización del directorio pasado como 
 echo " -l --> Lista los directorios que están siendo monitorizados por SnapWeb."
 exit
 }
-
+totales(){ ##Total de ficheros en un directorio - Recursivo
+[ ! -d $1 ] && exit 0
+total=0
+for fich in $(find $1 -xdev -type f 2>/dev/null)
+do
+  total=$[$total + 1]
+done
+echo $total
+}
 list () {
 echo "Directorios monitorizados:"
 echo "--------------------------"
+total=0
+ftotales=0
 for dir in $(find /usr/local/snapweb/snap_back/* -maxdepth 0 -type d|grep -v "\.2")
 do
 	cat $dir/.rutaabs
+  total=$(totales $dir)
+  ftotales=$[$ftotales + $total]
+  echo "      Ficheros monitorizados:$total"
+  echo
 done
 if [ "$dir" = "" ]; then
    echo "No hay directorios monitorizados"
 fi
+inototal=$(cat /proc/sys/fs/inotify/max_user_watches)
+echo "Actualmente están monitorizados $ftotales ficheros de $inototal."
+echo "--------------------------"
 exit
 }
 
