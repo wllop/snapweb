@@ -54,8 +54,9 @@ total=0
 ftotales=0
 for dir in $(find /usr/local/snapweb/snap_back/* -maxdepth 0 -type d|grep -v "\.2")
 do
-	cat $dir/.rutaabs
-  total=$(totales $dir)
+	ruta=$(cat $dir/.rutaabs)
+  echo "$ruta"
+  total=$(totales $ruta)
   ftotales=$[$ftotales + $total]
   echo "      Ficheros monitorizados:$total"
   echo
