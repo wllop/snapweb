@@ -1,8 +1,5 @@
-* Cambiar if por CASE para añadir los múltiples tipos de bloqueos!! --> Hecho
-* Escaneo ficheros nuevos o modificados --> Hecho
-* Directorios a excluir serán con ruta relativa!! (Hecho)
-* Hacer un update que copie jack.sh a /usr/local/snapweb/, snapweb.sh y revisar los archivos de firmas. --> hecho! update.sh
-* Copiar snapweb.sh en PATH!! --> Hecho
-* Indicar en /etc/snapweb.conf el mail donde se recibirán las notificaciones. Campo: email_receipt:
 * Comprobar valores inotify!!
 * Cuando detecte código sospechoso que envíe diferencias.
+* En modo sitelock=1 q notifique nuevos archivos.
+* Que update indique si quiere añadir nuevas firmas si se encuentra firmasAV.txt
+* Integrar Linux Malware Detect con el scanner. 

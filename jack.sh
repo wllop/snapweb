@@ -23,7 +23,7 @@
 fatal(){ echo ; echo "Error: $@" >&2;${E:+exit $E};}
 
 check(){
-if [ "$#" -lt 1]; then
+if [ "$#" -lt 1 ]; then
   E= fatal "Error de parámetros."
 fi
 
@@ -179,6 +179,9 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
          rm -f /usr/local/snapweb/.changes/$filesan 
       fi
       mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
+      mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
+      echo "Se ha creado el nuevo fichero $1/$2 cuando estaba habilitado el bloqueo del site."|mutt -s "SNAPWEB: Nuevo fichero bloqueado. " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 cuando estaba habilitado el bloqueo del site."|mail -s "SNAPWEB: Nuevo fichero bloqueado." $mail_destino 
+        
       fi
       ;; #Fin lock=1
     esac

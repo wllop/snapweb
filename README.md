@@ -47,7 +47,10 @@ Próximas mejoras:
 
 ACTUALIZAR:
 	Una vez creado el repositorio github en el sistema, se puede hacer uso del script update.sh para comprobar actualizaciones del repositorio y actualizar los ficheros jack.sh y snapweb.sh.
-	
+
+VÍDEOS:
+https://vimeo.com/wllop
+
 Cualquier comentario, error o mejora enviadlo a wllop@esat.es. 
 Muchas gracias!!
 @wllop
