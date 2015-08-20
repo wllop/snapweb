@@ -1,6 +1,4 @@
 * Comprobar valores inotify!!
 * Cuando detecte código sospechoso que envíe diferencias.
-* En modo sitelock=1 q notifique nuevos archivos. --> HECHO
-* Que update indique si quiere añadir nuevas firmas si se encuentra firmasAV.txt -> HECHO.
 * Integrar Linux Malware Detect con el scanner.  
 
