@@ -39,7 +39,7 @@ for cad in $(cat /etc/firmasAV.txt)
 do
   nombre=$(echo $cad|cut -d: -f1)
   valor=$(echo $cad|cut -d: -f2)
-  multi=$(echo -e $(cat $1)|grep "$nombre" |wc -l)
+  multi=$(echo -e $(cat $1)|grep -i "$nombre" |wc -l)
   [ "$multi" -gt 0 ] && total=$[$total + ($valor * $multi) ]&&str="$str - $nombre"
 done
 echo "$total $str"
