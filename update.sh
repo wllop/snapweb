@@ -31,3 +31,11 @@ fi
 if ! diff -rq ./jack.sh /usr/local/snapweb/jack.sh >/dev/null 2>&1;then
    cp -f ./jack.sh /usr/local/snapweb/jack.sh
 fi
+
+if ! diff -rq ./firmasAV.txt /etc/firmasAV.txt >/dev/null 2>&1;then
+   echo "Los ficheros de firmas del repositorio y el que tiene ubicado en /etc/ son distintos."
+   read  -p "¿Desea que combine ambos archivos: (S/n)" res
+   if [ "res" != "n" ]; then
+    cat firmasAV.txt /etc/firmasAV.txt|sort|uniq>/etc/firmasAV.txt
+   fi
+fi
