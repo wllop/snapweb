@@ -39,7 +39,7 @@ for cad in $(cat /etc/firmasAV.txt)
 do
   nombre=$(echo $cad|cut -d: -f1)
   valor=$(echo $cad|cut -d: -f2)
-  multi=$(grep "$nombre" $1 |wc -l)
+  multi=$(echo -e $(cat $1)|grep "$nombre" |wc -l)
   [ "$multi" -gt 0 ] && total=$[$total + ($valor * $multi) ]&&str="$str - $nombre"
 done
 echo "$total $str"
@@ -181,7 +181,6 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
       mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
       mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
       echo "Se ha creado el nuevo fichero $1/$2 cuando estaba habilitado el bloqueo del site."|mutt -s "SNAPWEB: Nuevo fichero bloqueado. " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 cuando estaba habilitado el bloqueo del site."|mail -s "SNAPWEB: Nuevo fichero bloqueado." $mail_destino 
-        
       fi
       ;; #Fin lock=1
     esac
