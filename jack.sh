@@ -180,7 +180,15 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
       fi
       mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
       mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
-      echo "Se ha creado el nuevo fichero $1/$2 cuando estaba habilitado el bloqueo del site."|mutt -s "SNAPWEB: Nuevo fichero bloqueado. " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 cuando estaba habilitado el bloqueo del site."|mail -s "SNAPWEB: Nuevo fichero bloqueado." $mail_destino 
+      buscar_excluidos $1/$2
+      total=($(check $1/$2))
+       if [ ${total[0]} -gt 5 ]; then #Controlar
+        content=$(cat $1/$2)
+        mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
+        echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso (Site_lock=1)" $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
+       else
+        echo "Se ha creado el nuevo fichero $1/$2 cuando estaba habilitado el bloqueo del site."|mutt -s "SNAPWEB: Nuevo fichero bloqueado. " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 cuando estaba habilitado el bloqueo del site."|mail -s "SNAPWEB: Nuevo fichero bloqueado." $mail_destino 
+       fi
       fi
       ;; #Fin lock=1
     esac
@@ -188,7 +196,6 @@ elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero eliminado!
     #Activo el registro de la carpeta!
     case "$lock_on" in
       0)total=($(check $1/$2))
-        echo ${total[0]} >>/usr/local/snapweb/msg.log
         if [ ${total[0]} -gt 5 ]; then #Controlar
      		content=$(cat $1/$2)
         mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
