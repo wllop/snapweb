@@ -180,7 +180,7 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
       fi
       mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
       mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
-      buscar_excluidos $1/$2
+      buscar_excluidos $1/
       total=($(check $1/$2))
        if [ ${total[0]} -gt 5 ]; then #Controlar
         content=$(cat $1/$2)
