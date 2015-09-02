@@ -71,7 +71,7 @@ base=$(base_snap $1)
 rutaabs=$(cat $base/.rutaabs|tr -s /)
 for var in $(grep -i "exclude_dir" /etc/snapweb.conf|cut -d= -f2)
 do
-  if [ "$rutaabs$var/" = "$1" ];then
+  if [ "$rutaabs$var" = "$1" ];then
       exit
   fi
 done 
