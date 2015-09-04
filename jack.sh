@@ -72,7 +72,11 @@ rutaabs=$(cat $base/.rutaabs|tr -s /)
 for var in $(grep -i "exclude_dir" /etc/snapweb.conf|cut -d= -f2)
 do
   if [ "$rutaabs$var" = "$1" ];then
+      echo "Sale">>/usr/local/snapweb/msg2.log
       exit
+  elif [ "$rutaabs$var/" = "$1" ];then
+      echo "Sale">>/usr/local/snapweb/msg2.log
+      exit 
   fi
 done 
 IFS=$IFS_OLD
@@ -86,11 +90,12 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
     case "$lock_on" in  #Tipo bloqueo
       0) #Monitorizar
-        buscar_excluidos $1/$2
+        buscar_excluidos $1/$2/
         cp -pfr $1/$2 $base/$subdir/
         echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
         ;;
       1) #Bloqueado
+          buscar_excluidos $1/$2/
         if [  -e  $base/$subdir/$2 ] ; then 
           #Es una restauraciÃ³n!!
           cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
@@ -106,7 +111,6 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
           if [ -e /usr/local/snapweb/.changes/$filesan ];then
             rm -fr /usr/local/snapweb/.changes/$filesan 
           fi
-          buscar_excluidos $1/$2
           mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
         fi
         ;;
@@ -130,7 +134,7 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
   fi
 elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
-     buscar_excluidos $1/$2
+     buscar_excluidos $1/$2/
      if [ "$lock_on" = "0" ];then
       cp -fpr $1/$2 $base/$subdir/
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
@@ -173,14 +177,14 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
          mkdir -p /usr/local/snapweb/.changes
          chmod 750 /usr/local/snapweb/.changes
       fi
-       #nombre del fichero será la ruta absoluta, sustituyendo la / por :::
+       #nombre del fichero serÃ¡ la ruta absoluta, sustituyendo la / por :::
+      buscar_excluidos $1/
       filesan=$(echo $1/$2|sed 's/\//:_:/g')
       if [ -e /usr/local/snapweb/.changes/$filesan ];then
          rm -f /usr/local/snapweb/.changes/$filesan 
       fi
       mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
       mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
-      buscar_excluidos $1/
       total=($(check $1/$2))
        if [ ${total[0]} -gt 5 ]; then #Controlar
         content=$(cat $1/$2)
@@ -204,7 +208,8 @@ elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero eliminado!
         cp -fpr $1/$2 $base/$subdir
         ;;    
     1)
-      #Mirar si lo que se quiere crear es una restauración en modo lock_on
+      #Mirar si lo que se quiere crear es una restauraciÃ³n en modo lock_on
+        buscar_excluidos $1/
         if [ ! -e $base/$subdir/$2 ];then
          rm -fr $1/$2 2>/dev/null #Redirecciono error por problemas con pureftpd
         fi
@@ -223,7 +228,8 @@ elif [ "$3" = "IN_CLOSE_WRITE" ]; then # fichero CAMBIADO!
         cp -fpr $1/$2 $base/$subdir/
         ;;
     1)
-      #Mirar si HAY cambios 
+      buscar_excluidos $1/
+    #Mirar si HAY cambios 
       if  ! diff  $base/$subdir/$2 $1/$2 ;then 
        #Es una restauración!!
         cp -rfp $base/$subdir/$2 $1/ 2>>/usr/local/snapweb/msg.log
@@ -249,6 +255,7 @@ elif [ "$3" = "IN_DELETE" ]; then #Fichero borrado
    if [ "$lock_on" = "0" ];then
       rm -fr $base/$subdir/$2
     else
+      buscar_excluidos $1/
       #Recupero el directorio del repositorio que tengo en snap_back!!
       if [ ! -e $1/$2 ]; then 
       #Añado a la base los subdirectorios existentes
