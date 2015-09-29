@@ -32,14 +32,14 @@ if ! diff -rq ./jack.sh /usr/local/snapweb/jack.sh >/dev/null 2>&1;then
    cp -f ./jack.sh /usr/local/snapweb/jack.sh
 fi
 #Para comprobar cambios en los ficheros de firmas hay que ordenarlos previamente!!
-sort ./firmasAV.txt -o /tmp/.firmasgit.txt
-mv /tmp/.firmasgit.txt ./firmasAV.txt
-sort /etc/firmasAV.txt -o /tmp/.firmasgit.txt
-mv /tmp/.firmasgit.txt /etc/firmasAV.txt
-if ! diff -rq ./firmasAV.txt /etc/firmasAV.txt >/dev/null 2>&1;then
+sort ./etc/snapweb/firmasAV.txt -o /tmp/.firmasgit.txt
+mv /tmp/.firmasgit.txt ./etc/snapweb/firmasAV.txt
+sort /etc/snapweb/firmasAV.txt -o /tmp/.firmasgit.txt
+mv /tmp/.firmasgit.txt /etc/snapweb/firmasAV.txt
+if ! diff -rq ./etc/snapweb/firmasAV.txt /etc/snapweb/firmasAV.txt >/dev/null 2>&1;then
    echo "Los ficheros de firmas del repositorio y el que tiene ubicado en /etc/ son distintos."
    read  -p "¿Desea que combine ambos archivos: (S/n)" res
    if [ "$res" != "n" ]; then
-    cat firmasAV.txt /etc/firmasAV.txt|sort|uniq>/etc/firmasAV.txt
+    cat ./etc/snapweb/firmasAV.txt /etc/snapweb/firmasAV.txt|sort|uniq>/etc/snapweb/firmasAV.txt
    fi
 fi

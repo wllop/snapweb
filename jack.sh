@@ -31,11 +31,11 @@ if ! [ -f $1 ]; then
   E=2 fatal "$1 debe ser un fichero"
 fi
 
-! [ -f /etc/firmasAV.txt ] && touch /etc/firmasAV.txt && chmod 644 /etc/firmasAV.txt
+! [ -f /etc/snapweb/firmasAV.txt ] && touch /etc/snapweb/firmasAV.txt && chmod 644 /etc/snapweb/firmasAV.txt
 
 total=0
 i=0
-for cad in $(cat /etc/firmasAV.txt)
+for cad in $(cat /etc/snapweb/firmasAV.txt)
 do
   nombre=$(echo $cad|cut -d: -f1)
   valor=$(echo $cad|cut -d: -f2)
@@ -66,26 +66,21 @@ base_snap(){ #Saber el directorio base_snap que está en snap_back
 }
 buscar_excluidos(){ #Comprueba si $1 está en la lista de directorios a excluir de la monitorización
 IFS_OLD=$IFS
-IFS=';'
+IFS='$\n'
 base=$(base_snap $1)
-rutaabs=$(cat $base/.rutaabs|tr -s /)
-for var in $(grep -i "exclude_dir" /etc/snapweb.conf|cut -d= -f2)
-do
-  if [ "$rutaabs$var" = "$1" ];then
-      echo "Sale">>/usr/local/snapweb/msg2.log
-      exit
-  elif [ "$rutaabs$var/" = "$1" ];then
-      echo "Sale">>/usr/local/snapweb/msg2.log
-      exit 
-  fi
-done 
+rutaabs=$(cat "$base/.rutaabs"|tr -s /)
+len=$(echo ${#rutaabs})
+param=$(echo $1/|tr -s /)
+subdir=$(echo ${param:$len})
+grep -iw "$subdir" /etc/snapweb/exclude_dir &>/dev/null && exit
 IFS=$IFS_OLD
 }
+
 orig=$1
 base=$(base_snap $1) #/usr/local/snapweb/snap_back/rutadeldirectoriobase
 len=$(cat $base/.ruta)
 subdir=$(echo ${orig:$len})
-lock_on=$(grep -i "lock_on" /etc/snapweb.conf|cut -d= -f2)
+lock_on=$(grep -i "lock_on" /etc/snapweb/snapweb.conf|cut -d= -f2)
 if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
     case "$lock_on" in  #Tipo bloqueo
@@ -161,7 +156,7 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
         #echo ${total[0]} >>/usr/local/snapweb/msg.log
         if [ ${total[0]} -gt 5 ]; then #Controlar
      		content=$(cat $1/$2)
-        mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
+        mail_destino=$(grep "email=" /etc/snapweb/snapweb.conf|cut -d= -f2)
           echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
         fi
         cp -fpr $1/$2 $base/$subdir/
@@ -184,11 +179,11 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
          rm -f /usr/local/snapweb/.changes/$filesan 
       fi
       mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
-      mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
+      mail_destino=$(grep "email=" /etc/snapweb/snapweb.conf|cut -d= -f2)
       total=($(check $1/$2))
        if [ ${total[0]} -gt 5 ]; then #Controlar
         content=$(cat $1/$2)
-        mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
+        mail_destino=$(grep "email=" /etc/snapweb/snapweb.conf|cut -d= -f2)
         echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso (Site_lock=1)" $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
        else
         echo "Se ha creado el nuevo fichero $1/$2 cuando estaba habilitado el bloqueo del site."|mutt -s "SNAPWEB: Nuevo fichero bloqueado. " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 cuando estaba habilitado el bloqueo del site."|mail -s "SNAPWEB: Nuevo fichero bloqueado." $mail_destino 
@@ -202,7 +197,7 @@ elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero eliminado!
       0)total=($(check $1/$2))
         if [ ${total[0]} -gt 5 ]; then #Controlar
      		content=$(cat $1/$2)
-        mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
+        mail_destino=$(grep "email=" /etc/snapweb/snapweb.conf|cut -d= -f2)
           echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
         fi
         cp -fpr $1/$2 $base/$subdir
@@ -222,7 +217,7 @@ elif [ "$3" = "IN_CLOSE_WRITE" ]; then # fichero CAMBIADO!
         echo ${total[0]} >>/usr/local/snapweb/msg.log
         if [ ${total[0]} -gt 5 ]; then #Controlar
      		content=$(cat $1/$2)
-        mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
+        mail_destino=$(grep "email=" /etc/snapweb/snapweb.conf|cut -d= -f2)
           echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
         fi 
         cp -fpr $1/$2 $base/$subdir/
@@ -243,6 +238,7 @@ elif [ "$3" = "IN_MOVED_FROM" ]; then #Fichero borrado o movido
       #Elimino de la monitorización --> Pendiente
       rm -fr $base/$subdir/$2
     else
+      buscar_excluidos $1/
       #Recupero el directorio del repositorio que tengo en snap_back!!
       #Añado a la base los subdirectorios existentes
       if [ ! -e $1/$2 ]; then 

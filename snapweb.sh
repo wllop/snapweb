@@ -97,18 +97,18 @@ if [ ! -e /usr/local/snapweb/jack.sh ]; then
 fi 
 
 #Damos de alta el fichero de configuración en /etc/snapweb.conf y obtenemos cuenta email.
-if [ ! -e /etc/snapweb.conf ]; then
-  [ -e $PWD/snapweb.conf ] && cp -f $PWD/snapweb.conf /etc/snapweb.conf || E=4 fatal "No ha sido posible obtener el fichero de configuracion snapweb.conf, inténtelo más tarde. Gracias."
+if [ ! -e /etc/snapweb/snapweb.conf ]; then
+  [ -e $PWD/etc/snapweb/snapweb.conf ] && cp -f $PWD/etc/snapweb/snapweb.conf /etc/snapweb/snapweb.conf || E=4 fatal "No ha sido posible obtener el fichero de configuracion snapweb.conf, inténtelo más tarde. Gracias."
 else
-  mail_destino=$(grep "email=" /etc/snapweb.conf|cut -d= -f2)
+  mail_destino=$(grep "email=" /etc/snapweb/snapweb.conf|cut -d= -f2)
 fi
 if [ "$mail_destino" = "" ];then
   read -p "Por favor, introduzca la dirección de correo electrónico que recibirá las notificaciones de Snapweb: " mail_destino
-  sed -i "s/email=/email=$mail_destino/g" /etc/snapweb.conf
+  sed -i "s/email=/email=$mail_destino/g" /etc/snapweb/snapweb.conf
 fi  
-#Damos de alta el fichero de firmas en /etc/firmasAV.txt
-if [ ! -e /etc/firmasAV.txt ]; then
-  [ -e $PWD/firmasAV.txt ] && cp -f $PWD/firmasAV.txt /etc/firmasAV.txt || E=5 fatal "No ha sido posible obtener el fichero de firmas firmasAV.txt, inténtelo más tarde. Gracias."
+#Damos de alta el fichero de firmas en /etc/snapweb/firmasAV.txt
+if [ ! -e /etc/snapweb/firmasAV.txt ]; then
+  [ -e $PWD/etc/snapweb/firmasAV.txt ] && cp -f $PWD/etc/snapweb/firmasAV.txt /etc/snapweb/firmasAV.txt || E=5 fatal "No ha sido posible obtener el fichero de firmas firmasAV.txt, inténtelo más tarde. Gracias."
 fi
 
 #Compruebo la opción -d
@@ -173,7 +173,7 @@ fi
 
 [ -e /etc/incron.d/$filesan ] && rm -f /etc/incron.d/$filesan*
 #Excluyos los directorios indicados en la variable exclude_dir
-excl_dire=$(grep exclude_dir /etc/snapweb.conf|cut -d= -f2)
+excl_dire=$(grep exclude_dir /etc/snapweb/snapweb.conf|cut -d= -f2)
 if [ "$excl_dire" != "" ]; then
   patt=$(echo "$excl_dire"|sed 's/;/ -e /g')
   patt="grep -v -e $patt"
