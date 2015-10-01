@@ -80,7 +80,13 @@ orig=$1
 base=$(base_snap $1) #/usr/local/snapweb/snap_back/rutadeldirectoriobase
 len=$(cat $base/.ruta)
 subdir=$(echo ${orig:$len})
+rutaabs=$(cat "$base/.rutaabs"|tr -s /)
+rutasnap=$(find $rutaabs/* -name snapweb -type d)
+if [ -f $rutasnap/sitelock.conf ];then
+  lock_on=$(cat $rutasnap/sitelock.conf )
+else
 lock_on=$(grep -i "lock_on" /etc/snapweb/snapweb.conf|cut -d= -f2)
+fi
 if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
     case "$lock_on" in  #Tipo bloqueo

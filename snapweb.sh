@@ -96,12 +96,15 @@ if [ ! -e /usr/local/snapweb/jack.sh ]; then
   [ -e $PWD/jack.sh ] && cp -f $PWD/jack.sh /usr/local/snapweb 2>/dev/null >/dev/null && chmod a+x /usr/local/snapweb/jack.sh 2>/dev/null >/dev/null || E=3 fatal "Es necesario el fichero jack.sh para continuar."
 fi 
 
-#Damos de alta el fichero de configuración en /etc/snapweb.conf y obtenemos cuenta email.
+#Damos de alta el fichero de configuración en /etc/snapweb/snapweb.conf y obtenemos cuenta email.
 if [ ! -e /etc/snapweb/snapweb.conf ]; then
   [ -e $PWD/etc/snapweb/snapweb.conf ] && cp -f $PWD/etc/snapweb/snapweb.conf /etc/snapweb/snapweb.conf || E=4 fatal "No ha sido posible obtener el fichero de configuracion snapweb.conf, inténtelo más tarde. Gracias."
 else
   mail_destino=$(grep "email=" /etc/snapweb/snapweb.conf|cut -d= -f2)
 fi
+#Comprobamos si existe el fichero de exclusiones
+[ ! -e /etc/snapweb/exclude_dir ] && touch /etc/snapweb/exclude_dir
+
 if [ "$mail_destino" = "" ];then
   read -p "Por favor, introduzca la dirección de correo electrónico que recibirá las notificaciones de Snapweb: " mail_destino
   sed -i "s/email=/email=$mail_destino/g" /etc/snapweb/snapweb.conf
