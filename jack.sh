@@ -65,15 +65,13 @@ base_snap(){ #Saber el directorio base_snap que está en snap_back
   fi
 }
 buscar_excluidos(){ #Comprueba si $1 está en la lista de directorios a excluir de la monitorización
-IFS_OLD=$IFS
-IFS='$\n'
+
 base=$(base_snap $1)
 rutaabs=$(cat "$base/.rutaabs"|tr -s /)
 len=$(echo ${#rutaabs})
 param=$(echo $1/|tr -s /)
 subdir=$(echo ${param:$len})
 grep -iw "$subdir" /etc/snapweb/exclude_dir &>/dev/null && exit
-IFS=$IFS_OLD
 }
 
 orig=$1
@@ -91,7 +89,7 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
     case "$lock_on" in  #Tipo bloqueo
       0) #Monitorizar
-        buscar_excluidos $1/$2/
+       
         cp -pfr $1/$2 $base/$subdir/
         echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
         ;;
@@ -135,11 +133,11 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
   fi
 elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
-     buscar_excluidos $1/$2/
      if [ "$lock_on" = "0" ];then
       cp -fpr $1/$2 $base/$subdir/
       echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
     else
+      buscar_excluidos $1/$2/
       rm -fr $1/$2 2>>/usr/local/snapweb/msg.log
     fi
 
@@ -148,7 +146,8 @@ elif [ "$3" = "IN_MOVED_FROM,IN_ISDIR" ]; then #Carpeta borrada
       rm -fr $base/$subdir/$2 2>/dev/null
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
-      if [ ! -e $1/$2 ]; then 
+      buscar_excluidos $1/$2/
+     if [ ! -e $1/$2 ]; then 
       if [ -e $base/$subdir/$2 ];then
         cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
         service incron restart
