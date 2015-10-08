@@ -52,7 +52,7 @@ echo "Directorios monitorizados:"
 echo "--------------------------"
 total=0
 ftotales=0
-for dir in $(find /usr/local/snapweb/snap_back/* -maxdepth 0 -type d|grep -v "\.2")
+for dir in $(find /usr/local/snapweb/snap_back/* -maxdepth 0 -type d 2>/dev/null|grep -v "\.2")
 do
 	ruta=$(cat $dir/.rutaabs)
   echo "$ruta"
@@ -96,6 +96,7 @@ if [ ! -e /usr/local/snapweb/jack.sh ]; then
   [ -e $PWD/jack.sh ] && cp -f $PWD/jack.sh /usr/local/snapweb 2>/dev/null >/dev/null && chmod a+x /usr/local/snapweb/jack.sh 2>/dev/null >/dev/null || E=3 fatal "Es necesario el fichero jack.sh para continuar."
 fi 
 
+[ ! -e /etc/snapweb ] && mkdir /etc/snapweb
 #Damos de alta el fichero de configuración en /etc/snapweb/snapweb.conf y obtenemos cuenta email.
 if [ ! -e /etc/snapweb/snapweb.conf ]; then
   [ -e $PWD/etc/snapweb/snapweb.conf ] && cp -f $PWD/etc/snapweb/snapweb.conf /etc/snapweb/snapweb.conf || E=4 fatal "No ha sido posible obtener el fichero de configuracion snapweb.conf, inténtelo más tarde. Gracias."

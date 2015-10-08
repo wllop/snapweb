@@ -19,7 +19,7 @@
 #$1 --> Ruta
 #$2 --> Fichero
 #$3 --> Evento
-
+#
 fatal(){ echo ; echo "Error: $@" >&2;${E:+exit $E};}
 
 check(){
