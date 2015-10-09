@@ -176,17 +176,8 @@ else
 fi
 
 [ -e /etc/incron.d/$filesan ] && rm -f /etc/incron.d/$filesan*
-#Excluyos los directorios indicados en la variable exclude_dir
-excl_dire=$(grep exclude_dir /etc/snapweb/snapweb.conf|cut -d= -f2)
-if [ "$excl_dire" != "" ]; then
-  patt=$(echo "$excl_dire"|sed 's/;/ -e /g')
-  patt="grep -v -e $patt"
-  for file in $(find $1 -type d | $patt)
-   do 
-    echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
-   done
-else
-  for file in $(find $1 -type d $patt)
+#Corrijo la carencia de recursividad de incron.
+for file in $(find $1 -type d)
 do 
  echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
 done

@@ -85,13 +85,18 @@ if [ -f $rutasnap/sitelock.conf ];then
 else
 lock_on=$(grep -i "lock_on" /etc/snapweb/snapweb.conf|cut -d= -f2)
 fi
-if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
+if [ "$2" = "IN_IGNORED" ]; then #Puede pasar cuando se ha eliminado un fichero o directorio d forma "incontrolada"
+  case "$lock_on" in   #Aquí $2 es el propio evento 
+    0) #Monitorizar
+     [ ! -e $1 ] && rm -fr $base/$subdir 2>/dev/null
+     ;;
+  esac
+elif [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
     case "$lock_on" in  #Tipo bloqueo
       0) #Monitorizar
-       
-        cp -pfr $1/$2 $base/$subdir/
-        echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
+           cp -pfr $1/$2 $base/$subdir/
+        echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">/etc/incron.d/$(echo $1/$2|tr -d /)
         ;;
       1) #Bloqueado
           buscar_excluidos $1/$2/
@@ -117,6 +122,17 @@ if [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
 elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
    if [ "$lock_on" = "0" ];then
       rm -fr $base/$subdir/$2
+      #Elimino de incron!!
+      #Busco si está en /etc/incron.d/raiz  $rutaabs!! /var/www...
+      incronpath="/etc/incron.d/$(echo $rutaabs|tr -d /)"
+      line=$(grep -n "$1/$2" $incronpath|cut -d: -f1)  #Tiene q ser linea + d para usarlo en el sed d abajo.
+      [ "$line" != "" ] && line+="d" &&  sed -i "$line" $incronpath 2>/dev/null
+      #Eliminio linea
+      echo "--Line:  $line">>/usr/local/snapweb/msgline.txt
+     
+      #Ahora eliminio fichero del propio subdirectorio!!
+      incronsubpath="/etc/incron.d/$(echo $1/$2|tr -d /)"
+      [ -e $incronsubpath ] && rm -fr $incronsubpath
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
       #Añado a la base los subdirectorios existentes
@@ -135,7 +151,7 @@ elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
     #Activo el registro de la carpeta!
      if [ "$lock_on" = "0" ];then
       cp -fpr $1/$2 $base/$subdir/
-      echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $1/$2|tr -d /)
+      echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">/etc/incron.d/$(echo $1/$2|tr -d /)
     else
       buscar_excluidos $1/$2/
       rm -fr $1/$2 2>>/usr/local/snapweb/msg.log
@@ -144,6 +160,15 @@ elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
 elif [ "$3" = "IN_MOVED_FROM,IN_ISDIR" ]; then #Carpeta borrada
     if [ "$lock_on" = "0" ];then
       rm -fr $base/$subdir/$2 2>/dev/null
+            #Elimino de incron!!
+      #Busco si está en /etc/incron.d/raiz  $rutaabs!! /var/www...
+      incronpath="/etc/incron.d/$(echo $rutaabs|tr -d /)"
+      line=$(echo $(grep -n "$1/$2" $incronpath|cut -d: -f1)d)  #Tiene q ser linea + d para usarlo en el sed d abajo.
+      #Eliminio linea
+      sed -i "$line" $incronpath 2>/dev/null
+      #Ahora eliminio fichero del propio subdirectorio!!
+      incronsubpath="/etc/incron.d/$(echo $1/$2|tr -d /)"
+      [ -e $incronsubpath ] && rm -fr $incronsubpath
     else
       #Recupero el directorio del repositorio que tengo en snap_back!!
       buscar_excluidos $1/$2/
@@ -196,7 +221,7 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
       fi
       ;; #Fin lock=1
     esac
-elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero eliminado!
+elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero nombre nuevo renombrado!
     #Activo el registro de la carpeta!
     case "$lock_on" in
       0)total=($(check $1/$2))
@@ -238,9 +263,8 @@ elif [ "$3" = "IN_CLOSE_WRITE" ]; then # fichero CAMBIADO!
       ;;
     esac
 
-elif [ "$3" = "IN_MOVED_FROM" ]; then #Fichero borrado o movido
+elif [ "$3" = "IN_MOVED_FROM" ]; then #Fichero borrado o movido NOMBRE ANTIGUO!!
     if [ "$lock_on" = "0" ];then
-      #Elimino de la monitorización --> Pendiente
       rm -fr $base/$subdir/$2
     else
       buscar_excluidos $1/
