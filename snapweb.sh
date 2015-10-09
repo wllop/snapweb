@@ -181,7 +181,6 @@ for file in $(find $1 -type d)
 do 
  echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
 done
-fi
 
 #Comprobar que la copia y el orginal son idénticos.
 if diff -rq $1 /usr/local/snapweb/snap_back/$filesan|grep -v .ruta >/dev/null 2>&1; then
