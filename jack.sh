@@ -70,7 +70,7 @@ rutaabs=$(cat "$base/.rutaabs"|tr -s /)
 len=$(echo ${#rutaabs})
 param=$(echo $1/|tr -s /)
 subdir=$(echo ${param:$len})
-grep -m1 -iw "$subdir" /etc/snapweb/exclude_dir &>/dev/null && exit
+[ "$subdir" != "" ] && grep -m1 -iw "$subdir" /etc/snapweb/exclude_dir &>/dev/null && exit
 }
 echo $1 $2 $3 >>/usr/local/snapweb/debug_w
 orig=$1
@@ -95,7 +95,9 @@ elif [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
     case "$lock_on" in  #Tipo bloqueo
       0) #Monitorizar
            cp -pfr $1/$2 $base/$subdir/
-        echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">/etc/incron.d/$(echo $1/$2|tr -d /)
+		echo "$1/$2-- $rutaabs" >>/usr/local/snapweb/msgwww
+           
+        echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $rutaabs|tr -d /)
         ;;
       1) #Bloqueado
          
@@ -121,7 +123,7 @@ elif [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
         ;;
         2) #Automático
            cp -pfr $1/$2 $base/$subdir/
-        echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">/etc/incron.d/$(echo $1/$2|tr -d /)
+        echo "$1/$2 IN_MOVED_TO,IN_MOVED_FROM,IN_CREATE,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$(echo $rutaabs|tr -d /)
         ;;
     esac    
 elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
@@ -134,8 +136,8 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
       [ "$line" != "" ] && line+="d" &&  sed -i "$line" $incronpath 2>/dev/null
       #Eliminio linea
       #Ahora eliminio fichero del propio subdirectorio!!
-      incronsubpath="/etc/incron.d/$(echo $1/$2|tr -d /)"
-      [ -e $incronsubpath ] && rm -fr $incronsubpath
+      #incronsubpath="/etc/incron.d/$(echo $1/$2|tr -d /)"
+      #[ -e $incronsubpath ] && rm -fr $incronsubpath
       ;;
     1) #Recupero el directorio del repositorio que tengo en snap_back!!
       #Añado a la base los subdirectorios existentes
@@ -149,7 +151,7 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
      #   sleep 6
      #   fi
      # done
-	 [ ! -e $1/$2 ] && cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
+	 [ ! -e $1/$2 ] && cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log  &&service incron restart
 	  diff $base/$subdir $1 >/dev/null 2>&1 && service incron restart || cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
       ;;
     2) rm -fr $base/$subdir/$2
@@ -379,12 +381,12 @@ elif [ "$3" = "IN_DELETE" ]; then #Fichero borrado
         ;;
       1)  buscar_excluidos $1/
       #Recupero el directorio del repositorio que tengo en snap_back!!
-      if [ ! -e $1/$2 ]; then 
+      [ ! -e $1 ] && mkdir $1 && cp -frp $base/$subdir/*.* $1 && service incron restart
+	  if [ ! -e $1/$2 ]; then 
       #Añado a la base los subdirectorios existentes
         if [ -e $base/$subdir/$2 ];then
         cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
-       else
-         rm -fr $1/$2
+       
         fi
       fi 
       ;;
