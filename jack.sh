@@ -345,7 +345,7 @@ elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero nombre nuevo renombrado!
         fi
         ;;   
     esac
-elif [ "$3" = "IN_CLOSE_WRITE" ]; then # fichero CAMBIADO!
+elif [ "$3" = "IN_MODIFY" ]; then # fichero CAMBIADO!
     #Activo el registro de la carpeta!
      case "$lock_on" in
      0)total=($(check $1/$2))
