@@ -96,15 +96,8 @@ elif [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
       0) #Monitorizar
            cp -pfr $1/$2 $base/$subdir/
            incronpath="/etc/incron.d/$(echo $1$2|tr -d /)"
-            #Cuando pones un directorio en /incron.d automáticamente se monitoriza, no hay qu reiniciar!
-           echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
-           #line=$(grep -m1 -n "$1/$2" $incronpath|cut -d: -f1)  #Tiene q ser linea + d para usarlo en el sed d abajo.
-           #while [ "$line" = "" ]; do
-           # if mkdir /var/lock/snaplockci; then
-          #      line="exit"
-          #      rmdir /var/lock/snaplockci
-          #  fi
-          #  done      
+           echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_MODIFY /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
+         
   ;;
       1) #Bloqueado
          if [  -e  $base/$subdir/$2 ] ; then 
@@ -112,7 +105,7 @@ elif [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
           cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
           incronpath="/etc/incron.d/$(echo $1$2|tr -d /)"
             #Cuando pones un directorio en /incron.d automáticamente se monitoriza, no hay qu reiniciar!
-          echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
+          echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_MODIFY /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
          else
           buscar_excluidos $1/$2/
           #Crear una carpeta .changes con lo q haya cambiado.
@@ -127,22 +120,12 @@ elif [ "$3" = "IN_CREATE,IN_ISDIR" ]; then #Nueva carpeta creada!
           fi
           mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
         fi
-        #if [ $(pidof -x jack.sh| wc -w) -gt 2 ]; then 
-        # exit
-        #fi
-        #service incron restart
+       
         ;;
         2) #Automático
          cp -pfr $1/$2 $base/$subdir/
            incronpath="/etc/incron.d/$(echo $1$2|tr -d /)"
-           echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
-        #cp -pfr $1/$2 $base/$subdir/
-        #incronpath="/etc/incron.d/$(echo $rutaabs|tr -d /)"
-        #[ grep -m1 -n "$1/$2" $incronpath ] || echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>$incronpath
-        #if [ $(pidof -x jack.sh| wc -w) -gt 2 ]; then 
-        # exit
-        #fi
-        #service incron restart
+           echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_MODIFY /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
         ;;
     esac    
 elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
@@ -152,37 +135,16 @@ elif [ "$3" = "IN_DELETE,IN_ISDIR" ]; then #Carpeta borrada
       #Busco si está en /etc/incron.d/raiz  $rutaabs!! /var/www...
       incronpath="/etc/incron.d/$(echo $1$2|tr -d /)"
       rm -fr $incronpath 2>/dev/null
-      #line=$(grep -m1 -n "$1/$2" $incronpath|cut -d: -f1)  #Tiene q ser linea + d para usarlo en el sed d abajo.
-      #while [ $line != "" ] ; do
-      #if mkdir /var/lock/snaplock; then
-      #    line+="d" &&  sed -i "$line" $incronpath 2>/dev/null
-      #    line=""
-      #    rm -fr /var/lock/snaplock
-      #fi
-      #done
-      #rm -fr $incronpath 2>/dev/null
-      #Eliminio linea
-      #Ahora eliminio fichero del propio subdirectorio!!
-      #incronsubpath="/etc/incron.d/$(echo $1/$2|tr -d /)"
       ;;
     1) #Recupero el directorio del repositorio que tengo en snap_back!!
-      #Añado a la base los subdirectorios existentes
-      #while [ ! -e $1/$2 ];
-      #do   
+     
       #Añado a la base los subdirectorios existentes 
       if [ -e $base/$subdir/$2 ];then
        #   #if [ ! -e $1 ];then
        cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
        incronpath="/etc/incron.d/$(echo $1$2|tr -d /)"
             #Cuando pones un directorio en /incron.d automáticamente se monitoriza, no hay qu reiniciar!
-       echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
-          
-     #   service incron restart
-     #   sleep 6
-     #   fi
-     # done
-    #[ ! -e $1/$2 ] && cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log  &&service incron restart
-    # diff $base/$subdir $1 >/dev/null 2>&1 && service incron restart || cp -rfp $base/$subdir/$2 $1 2>>/usr/local/snapweb/msg.log
+       echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_MODIFY /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
       fi
       ;;
     2)
@@ -199,7 +161,7 @@ elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
     0) cp -pfr $1/$2 $base/$subdir/
            incronpath="/etc/incron.d/$(echo $1$2|tr -d /)"
             #Cuando pones un directorio en /incron.d automáticamente se monitoriza, no hay qu reiniciar!
-           echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
+           echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_MODIFY /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
        ;;
     1) buscar_excluidos $1/$2/
       rm -fr $1/$2 2>>/usr/local/snapweb/msg.log
@@ -207,7 +169,7 @@ elif [ "$3" = "IN_MOVED_TO,IN_ISDIR" ]; then #Nueva carpeta creada!
     2) cp -pfr $1/$2 $base/$subdir/
            incronpath="/etc/incron.d/$(echo $1$2|tr -d /)"
             #Cuando pones un directorio en /incron.d automáticamente se monitoriza, no hay qu reiniciar!
-           echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
+           echo "$1/$2 IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_MODIFY /usr/local/snapweb/jack.sh \$@ \$# \$%">$incronpath
          
        ;;
     esac
@@ -283,26 +245,25 @@ elif [ "$3" = "IN_CREATE" ]; then #Nuevo fichero
        fi
       fi
       ;; #Fin lock=1
-     2) if [  -e  $base/$subdir/$2 ] ; then 
-       #Es una restauración!!
-       cp -fpr  $base/$subdir/$2 $1
-       exit
-       else 
-         total=($(check $1/$2)) #Automático!!
-        #echo ${total[0]} >>/usr/local/snapweb/msg.log
-        if [ ${total[0]} -gt 5 ]; then #Controlar ##Si el valor es >5 se considera AMENAZA!! Por tanto a bloquear, aunque se almacena fichero en cuarentena.
-         filesan=$(echo $1/$2|sed 's/\//:_:/g') #Cuarentena cambio / por :_: así tendré su posición absoluta cambiando :_: por / ;)
-          if [ -e /usr/local/snapweb/.changes/$filesan ];then #Si existe versión anterior en cuarentena la elimino.
-            rm -f /usr/local/snapweb/.changes/$filesan 
-          fi
+     2) 
+        total=($(check $1/$2))
+       if [ ${total[0]} -gt 5 ]; then #Controlar
         content=$(cat $1/$2)
-        mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log #Muevo a cuarentena
         mail_destino=$(grep -m1 "email=" /etc/snapweb/snapweb.conf|cut -d= -f2)
-          echo "Se ha intentado crear el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Fichero Bloqueado. AUTOMÁTICO " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
+        filesan=$(echo $1/$2|sed 's/\//:_:/g')
+         if [ -e /usr/local/snapweb/.changes/$filesan ];then
+             rm -f /usr/local/snapweb/.changes/$filesan 
+          fi
+        mv $1/$2 /usr/local/snapweb/.changes/$filesan 2>>/usr/local/snapweb/msg.log
+         if [ ! -e $base/$subdir/$2 ];then
+           echo "Se ha creado el nuevo fichero $1/$2 con código sospecho y ha sido puesto en cuarentena :${total[*]}."|mutt -s "SNAPWEB: Código sospechoso. AUTOMÁTICO " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
+         else ##Restauro 
+           cp -f $base/$subdir/$2 $1/$2 2>/dev/null #Restauro por copia local!!
+           echo "Se ha restaurado el fichero $1/$2 que tenía código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso restaurado. AUTOMÁTICO " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
+         fi 
         else
-        cp -fpr $1/$2 $base/$subdir/  
+        cp -fpr $1/$2 $base/$subdir
         fi
-      fi
         ;;
     esac
 elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero nombre nuevo renombrado!       
@@ -312,7 +273,7 @@ elif [ "$3" = "IN_MOVED_TO" ]; then #Nueva fichero nombre nuevo renombrado!
         if [ ${total[0]} -gt 10 ]; then #Controlar
         content=$(cat $1/$2)
         mail_destino=$(grep -m1 "email=" /etc/snapweb/snapweb.conf|cut -d= -f2)
-          echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
+          echo "Se ha creado el nuevo fichero $1/$2 con código sospecho y ha sido puesto en cuarentena:${total[*]}."|mutt -s "SNAPWEB: Código sospechoso " $mail_destino -a $1/$2 >/dev/null 2>&1 || echo "Se ha creado el nuevo fichero $1/$2 con código sospecho:${total[*]}. Contenido: $content"|mail -s "SNAPWEB: Código sospechoso." $mail_destino 
         fi
         cp -fpr $1/$2 $base/$subdir
         ;;    

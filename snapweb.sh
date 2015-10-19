@@ -184,12 +184,12 @@ if [ "$excl_dire" != "" ]; then
   patt="grep -v -e $patt"
   for file in $(find $1 -type d | $patt)
    do 
-    echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
+    echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_MODIFY /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
    done
 else
   for file in $(find $1 -type d $patt)
 do 
- echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
+ echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_MODIFY /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
 done
 fi
 #Comprobar que la copia y el orginal son idénticos.
