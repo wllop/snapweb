@@ -172,16 +172,26 @@ else
    mv -f /usr/local/snapweb/snap_back/$filesan /usr/local/snapweb/snap_back/$filesan.2
    cp -fpr $1 /usr/local/snapweb/snap_back/$filesan
    echo "${#ruta}">/usr/local/snapweb/snap_back/$filesan/.ruta #Con esto convertiremos rutas absolutas en relativas a snap_back
+      echo "$ruta">/usr/local/snapweb/snap_back/$filesan/.rutaabs
    echo "Se ha creado una firma del directorio $1"|mail -s "SNAPWEB: Firma reemplazada" $mail_destino
 fi
 
 [ -e /etc/incron.d/$filesan ] && rm -f /etc/incron.d/$filesan*
-#Corrijo la carencia de recursividad de incron.
-for file in $(find $1 -type d)
+#Excluyos los directorios indicados en la variable exclude_dir
+excl_dire=$(grep exclude_dir /etc/snapweb/snapweb.conf|cut -d= -f2)
+if [ "$excl_dire" != "" ]; then
+  patt=$(echo "$excl_dire"|sed 's/;/ -e /g')
+  patt="grep -v -e $patt"
+  for file in $(find $1 -type d | $patt)
+   do 
+    echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
+   done
+else
+  for file in $(find $1 -type d $patt)
 do 
  echo "$file IN_CREATE,IN_MOVED_TO,IN_MOVED_FROM,IN_DELETE,IN_CLOSE_WRITE /usr/local/snapweb/jack.sh \$@ \$# \$%">>/etc/incron.d/$filesan
 done
-
+fi
 #Comprobar que la copia y el orginal son idénticos.
 if diff -rq $1 /usr/local/snapweb/snap_back/$filesan|grep -v .ruta >/dev/null 2>&1; then
   echo "Hay diferencias entre el directorio $1 y el snapshot creado. Vuelva a lanzar el script."
@@ -196,4 +206,3 @@ if ! type -p snapweb.sh; then
    fi
 fi
 service incron restart
-
