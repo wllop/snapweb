@@ -1,11 +1,12 @@
 phpinfo:4
-curl:7
-exec:4
+curl(:7
+exec(:4
 iframe:6
-system:4
-shell_exec:10
+system(:4
+shell_exec(:10
 ${:4
-eval:10
+eval(:10
 AUTO_INCREMENT:7
 HTTP/1.:6
 Content-Length:6
+base64_decode(
